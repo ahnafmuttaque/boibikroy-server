@@ -1,0 +1,147 @@
+Project boibikroy {
+  database_type: 'PostgreSQL'
+  Note: 'A book sell service app for students to efficiently sell & buy books in college campus rather than selling them to libraries to cheap price & buying them at high price'
+}
+
+// college table
+// this table will be pre-defined and will be used in users table to identify the college of the user and in books table to identify the college of the book.
+// can't be deleted by anyone even admin. can only add , update and create new college by admin.
+// implement in the feature, if a collge is deleted in real time which is a rare case, will add the feature in version 2
+
+Table colleges {
+  id integer [primary key]
+  collegeCode smallint [not null, unique]
+  email varchar(150) [not null, unique]
+  collgename text [not null]
+  approved smallint [not null]
+  coltype char(1) [not null]
+  address text [not null]
+  upazila varchar(100) [not null]
+  districtsname varchar(100) [not null]
+  divname varchar(100) [not null]
+  createdAt timestamp [ not null]
+}
+
+Table upazilas {
+  id integer [primary key]
+  upazilaId integer [not null, unique]
+  upazilaName varchar(100) [not null]
+  districtId integer [not null]
+  districtName varchar(100) [not null]
+  divisionId integer [not null]
+  divisionName varchar(100) [not null]
+  createdAt timestamp [ not null]
+}
+
+Table education_levels {
+  id integer [primary key]
+  name varchar(100) [not null]
+  department varchar(100) [not null]
+  year smallint [not null]
+  created_at timestamp [ not null]
+  checks {
+  `unique_name_department_year: unique(name, department, year)`
+  `year > 0 and year < 4`
+  `CHECK (
+    (level_name = 'honours' AND year BETWEEN 1 AND 4)
+    OR
+    (level_name <> 'honours' AND year BETWEEN 1 AND 2)
+)`
+  }
+}
+
+// users table
+Table users {
+  id integer [primary key]
+  full_name varchar(255) [not null]
+  phone_no varchar(14) [not null, unique]
+  email varchar(255) [not null, unique]
+  college_id integer [ref: > colleges.id, not null]
+  password_hash text [not null]
+  edu_level_id integer [ref: > education_levels.id, not null,note: "on delete of education_levels, restrict deletion of education_levels if any user is associated with it"]
+  status varchar(200) [not null, default: "active", note: "active | inactive | suspended"]
+  suspended_by integer [ref: >? admins.id]
+  suspend_reason text
+  suspended_at timestamp
+  upazila_id integer [ref: > upazilas.upazilaId, not null, note: "ref upazilaId of upazilas table.. i created it long ago.. upazilaId will identify which district and which division it belongs. on delete restrict deletion of upazilas if any user is associated with it"]
+  address text
+  created_at timestamp [ not null]
+}
+
+
+Table books {
+  id integer [primary key]
+  image_key text [not null]
+  title varchar(200) [not null]
+  author varchar(200) [not null]
+  posted_by integer [ref: > users.id, not null, note: "on delete of user, book will be deleted automatically(cascade)"]
+  edu_level_id integer [ref: > education_levels.id, not null,note: "on delete of education_levels, restrict deletion of education_levels if any user is associated with it"]
+  type varchar(201) [not null, note: "class_book | easy_book | suggestion_and_question-bank"]
+  publication varchar(200) [not null]
+  papercode integer [not null]
+  condition varchar(200) [not null,  note: "like_new | normal | written_on" ]
+  original_price integer [not null, check: `original_price > 0`]
+  selling_price integer [not null, check: `selling_price > 0 and selling_price <= original_price`]
+  is_negotiable bool [not null]
+  publication_year int [not null, check: `publication_year > 0 and publication_year < current_year`]
+  status varchar(200) [not null, default: "active" , note: "draft | active | sold_out | archived | restricted"]
+  // admins can close a book
+  restricted_by integer [ref: >? admins.id]
+  restricted_reason text
+  restricted_at timestamp
+  description text
+  metting_campus_id integer [ref: > saved_campuses.id, not null, note: "on delete of saved_campuses, meeting_info will be set to default metting id"]
+  contact_no varchar(15) [ not null]
+  created_at timestamp [ not null]
+}
+
+Table saved_campuses {
+  id integer [primary key]
+  user_id integer [ref: >users.id, not null, note: "on delete of user, saved_campuses will be deleted automatically(cascade)"]
+  college_id integer [ref: >colleges.id, not null, note: "on delete of college, saved_campuses will be deleted automatically(cascade)"]
+  metting_place varchar(300) [not null, default: "college campus"]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+
+Table admins {
+  id integer [primary key]
+  email varchar(200) [not null, unique]
+  password_hash text [not null]
+  phone_no varchar(15) [not null, unique]
+  role varchar(100) [not null, default: "moderator", note: "moderator | admin"]
+  // only admin can create new admin and moderator. and moderator can only be suspended by admin.
+  status varchar(100) [not null, default: "active", note: "active | suspended"]
+  suspended_at timestamp
+  suspended_by integer [ref: >? admins.id] // it will always be a admin so we can remove this field also
+  created_at timestamp [not null]
+}
+
+Table feedbacks {
+  id integer [primary key]
+  subject varchar(100) [not null]
+  full_name varchar(100) [not null]
+  contact_no varchar(15) [not null]
+  email varchar(200) [not null]
+  description text [not null]
+  status varchar(200) [note: "reviewed | mark-as-improvement | pending", default: "pending" ]
+  created_at timestamp [not null]
+}
+
+Table reports {
+  id integer [primary key]
+  type varchar(200) [not null, note: "book | user"]
+  book_id integer [ref: >? books.id, note: "on delete of book, report will be deleted automatically(cascade)"]
+  user_id integer [ref: >? users.id, note: "on delete of user, report will be deleted automatically(cascade)"]
+  reported_by integer [ref: > users.id, not null]
+  report_reason text [not null]
+  status varchar(200) [not null, default: "pending", note: "pending | reviewed | confirmed"]
+  // reviewed_by will be updated whoever changed the status to non-pending.
+  reviewed_by integer [ref: >? admins.id ,note: "admin who reviewed the report"]
+  reviewed_at timestamp
+  created_at timestamp [not null]
+  checks {
+  `type = 'book' and book_id is not null and user_id is null or type = 'user' and user_id is not null and book_id is null`
+  }
+}
