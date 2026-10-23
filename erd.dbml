@@ -10,27 +10,47 @@ Project boibikroy {
 
 Table colleges {
   id integer [primary key]
-  collegeCode smallint [not null, unique]
-  email varchar(150) [not null, unique]
-  collgename text [not null]
-  approved smallint [not null]
-  coltype char(1) [not null]
+  code varchar(50) [not null, unique]
+  name varchar(300) [not null]
+  email varchar(300) [not null]
+  approved varchar(10) [not null]
   address text [not null]
-  upazila varchar(100) [not null]
-  districtsname varchar(100) [not null]
-  divname varchar(100) [not null]
-  createdAt timestamp [ not null]
+  upazila varchar(300) [not null]
+  district varchar(300) [not null]
+  division varchar(300) [not null]
+  created_at timestamp [ not null]
+  updated_at timestamp [not null]
+}
+
+Table divisions {
+  id integer [primary key]
+  name_en varchar(100) [not null]
+  bn_name varchar(100) [not null]
+  url varchar(255) [not null]
+  created_at timestamp [ not null]
+  updated_at timestamp [ not null]
+}
+
+Table districts {
+  id integer [primary key]
+  division_id integer [ref: > divisions.id, not null, note: "on delete of division, restrict deletion of division if any district is associated with it"]
+  name_en varchar(100) [not null]
+  bn_name varchar(100) [not null]
+  lat varchar(50) [not null]
+  lon varchar(50) [not null]
+  url varchar(255) [not null]
+  created_at timestamp [ not null]
+  updated_at timestamp [ not null]
 }
 
 Table upazilas {
   id integer [primary key]
-  upazilaId integer [not null, unique]
-  upazilaName varchar(100) [not null]
-  districtId integer [not null]
-  districtName varchar(100) [not null]
-  divisionId integer [not null]
-  divisionName varchar(100) [not null]
-  createdAt timestamp [ not null]
+  district_id integer [ref: > districts.id, not null, note: "on delete of district, restrict deletion of district if any upazila is associated with it"]
+  name_en varchar(100) [not null]
+  bn_name varchar(100) [not null]
+  url varchar(255) [not null]
+  created_at timestamp [ not null]
+  updated_at timestamp [ not null]
 }
 
 Table education_levels {
@@ -63,7 +83,7 @@ Table users {
   suspended_by integer [ref: >? admins.id]
   suspend_reason text
   suspended_at timestamp
-  upazila_id integer [ref: > upazilas.upazilaId, not null, note: "ref upazilaId of upazilas table.. i created it long ago.. upazilaId will identify which district and which division it belongs. on delete restrict deletion of upazilas if any user is associated with it"]
+  upazila_id integer [ref: > upazilas.id, not null, note: "ref upazilaId of upazilas table.. i created it long ago.. upazilaId will identify which district and which division it belongs. on delete restrict deletion of upazilas if any user is associated with it"]
   address text
   created_at timestamp [ not null]
 }
