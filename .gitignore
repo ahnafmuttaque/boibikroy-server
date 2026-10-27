@@ -6,3 +6,5 @@ node_modules/
 .gemini
 api.md
 .idea
+sqls/
+test/
