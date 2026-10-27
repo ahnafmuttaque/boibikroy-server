@@ -5,8 +5,8 @@ import {
   postAddFeedbacks,
   postUpdateFeedbackStatus,
 } from "./feedbacks.controller.js";
-import validationMiddleware from "../../middlewares/validation.middleware.js";
-import { FeedBack } from "../../validations/feedbacks.validation.js";
+import { PostFeedbackSchema } from "@validations/feedbacks.validation.js";
+import validateBodyWithSchema from "@middlewares/validateSchema.middleware.js";
 
 const router = Router();
 
@@ -14,7 +14,11 @@ router.get("/feedbacks", getAllFeedbacks);
 
 router.get("/feedbacks/:id", getSingleFeedback);
 
-router.post("/feedbacks", validationMiddleware(FeedBack), postAddFeedbacks);
+router.post(
+  "/feedbacks",
+  validateBodyWithSchema(PostFeedbackSchema),
+  postAddFeedbacks,
+);
 
 router.post("/feedbacks/:id", postUpdateFeedbackStatus);
 

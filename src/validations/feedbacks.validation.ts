@@ -1,7 +1,6 @@
 import * as z from "zod";
 
-
-export const FeedBack = z.object({
+export const PostFeedbackSchema = z.object({
   subject: z
     .string()
     .trim()
@@ -13,4 +12,4 @@ export const FeedBack = z.object({
   description: z.string().trim().min(15).max(500),
 });
 
-export type PostFeedback = z.infer<typeof FeedBack>;
+export type PostFeedback = z.infer<typeof PostFeedbackSchema>;

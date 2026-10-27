@@ -1,23 +1,29 @@
-import type {NextFunction, Request, Response} from "express";
-import {ZodError} from "zod";
-import {StatusCodes} from "http-status-codes";
-import {ApiResponse} from "../utils/ApiResponse.js";
-import {ReasonPhrases} from "http-status-codes/build/es/index.js";
+import type { NextFunction, Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import { ReasonPhrases } from "http-status-codes/build/es/index.js";
+import { ApiResponse } from "@/utils/ApiResponse.js";
+import { AppError } from "@/utils/AppError.js";
 
-function isZodError(err: unknown): err is ZodError {
-   return err instanceof ZodError;
+function isAppError(err: unknown): err is AppError {
+  return err instanceof AppError;
 }
 
-export default function errorMiddleware(err: unknown, req: Request, res: Response, next: NextFunction) {
-    let statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
-    let error: Record<string, any> = {error: ReasonPhrases.INTERNAL_SERVER_ERROR};
-    console.log(err);
+export default function errorMiddleware(
+  err: unknown,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  let statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
+  let errorObj: Record<string, any> = {
+    error: ReasonPhrases.INTERNAL_SERVER_ERROR,
+  };
 
+  if (isAppError(err)) {
+    statusCode = err.statusCode;
+    errorObj.error = err.message;
+  }
 
-    if(isZodError(err)) {
-        statusCode = StatusCodes.BAD_REQUEST;
-        error.error = err.issues;
-    }
-
-    new ApiResponse(statusCode, error).send(res);
+  console.log(err);
+  new ApiResponse(statusCode, errorObj).send(res);
 }

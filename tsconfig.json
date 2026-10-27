@@ -1,6 +1,16 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@utils/*": ["src/utils/*"],
+      "@validations/*": ["src/validations/*"],
+      "@types/*": ["src/types/*"],
+      "@middlewares/*": ["src/middlewares/*"],
+      "@config/*": ["src/config/*"],
+      "@modules/*": ["src/modules/*"],
+    },
     // File Layout
     "rootDir": "./src",
     "outDir": "./dist",
@@ -39,5 +49,5 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-  }
+  },
 }
