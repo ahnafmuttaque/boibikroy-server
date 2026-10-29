@@ -1,16 +1,15 @@
 import type { RequestHandler } from "express";
-import { withAuthAdmin } from "@/utils/asyncAuth.js";
+import { withAuth } from "@/utils/asyncAuth.js";
 import type { PostFeedback } from "@validations/feedbacks.validation.js";
+
 import * as feedBackService from "./feedbacks.service.js";
 import { StatusCodes } from "http-status-codes";
 import { asyncHandler } from "@/utils/asyncHanlder.js";
 import { ApiResponse } from "@/utils/ApiResponse.js";
 
-export const getAllFeedbacks: RequestHandler = withAuthAdmin(
-  async (req, res) => {},
-);
+export const getAllFeedbacks: RequestHandler = withAuth(async (req, res) => {});
 
-export const getSingleFeedback: RequestHandler = withAuthAdmin(
+export const getSingleFeedback: RequestHandler = withAuth(
   async (req, res) => {},
 );
 
@@ -22,6 +21,6 @@ export const postAddFeedbacks: RequestHandler = asyncHandler(
   },
 );
 
-export const postUpdateFeedbackStatus: RequestHandler = withAuthAdmin(
+export const postUpdateFeedbackStatus: RequestHandler = withAuth(
   async (req, res) => {},
 );

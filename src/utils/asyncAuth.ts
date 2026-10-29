@@ -1,35 +1,24 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-interface BaseUser {
-  id: string;
-  email: string;
-  phoneNo: string;
-}
-interface WithAdmin extends Request{
-  admin: {
-    role: string;
-  } & BaseUser
+import type { JwtPayload } from "jsonwebtoken";
+
+interface JWTBody extends JwtPayload {
+  readonly id: string;
+  readonly email: string;
+  readonly role?: "admin" | "moderator";
 }
 
-interface WithUser {
-  user: BaseUser
+interface WithAuth extends Request {
+  user: JWTBody;
 }
 
-export const withAuthAdmin: (fn: (req: WithAdmin, res: Response, next: NextFunction) => any) => RequestHandler = (fn) => {
-  return (req, res, next) => {
-    if (typeof req === "object" && req !== null && "admin" in req) {
-      Promise.resolve(fn(req as WithAdmin, res, next)).catch(next)
-    } else {
-     throw new Error("Invalid authAdmin controller")
-    }
-  }
-}
-
-export const withAuthUser: (fn: (req: WithUser, res: Response, next: NextFunction) => any) => RequestHandler = (fn) => {
+export const withAuth: (
+  fn: (req: WithAuth, res: Response, next: NextFunction) => any,
+) => RequestHandler = (fn) => {
   return (req, res, next) => {
     if (typeof req === "object" && req !== null && "user" in req) {
-      Promise.resolve(fn(req as WithUser, res, next)).catch(next)
+      Promise.resolve(fn(req as WithAuth, res, next)).catch(next);
     } else {
-     throw new Error("Invalid authUser controller")
+      throw new Error("Invalid authAdmin controller");
     }
-  }
-}
+  };
+};

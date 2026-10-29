@@ -4,6 +4,7 @@ let env = {
   NODE_ENV: process.env.NODE_ENV!,
   PORT: process.env.PORT!,
   DATABASE_CONNECTION_STRING: process.env.DATABASE_CONNECTION_STRING!,
+  JWT_SECRET: process.env.JWT_SECRET!,
 };
 
 function validateEnvs() {
