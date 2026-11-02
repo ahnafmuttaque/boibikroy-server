@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { postCreateAdmin, postLoginAdmin } from "@modules/auth/auth.controller.js";
+import {  postLoginAdmin } from "@modules/auth/auth.controller.js";
 import {
   AdminLoginSchema,
   AdminRegisterSchema,
@@ -11,7 +11,6 @@ const router = Router();
 router.post(
   "/admin/register",
   validateBodyWithSchema(AdminRegisterSchema),
-  postCreateAdmin,
 );
 
 router.post(

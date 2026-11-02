@@ -22,9 +22,3 @@ export const postLoginAdmin = asyncHandler(
     new ApiResponse(StatusCodes.OK, rest).send(res);
   },
 );
-
-export const postCreateAdmin = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const adminCredentials = req.body;
-  },
-);
