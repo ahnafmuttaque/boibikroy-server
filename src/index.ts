@@ -1,10 +1,10 @@
 import express from "express";
-import { ApiResponse } from "./utils/ApiResponse.js";
+import { ApiResponse } from "@utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
-import feedbackRouter from "./modules/feedbacks/feedbacks.route.js";
-import errorMiddleware from "./middlewares/error.middleware.js";
-import authRouter from "./modules/auth/auth.route.js";
-import env from "./config/env.config.js";
+import feedbackRouter from "@modules/feedbacks/feedbacks.route.js";
+import errorMiddleware from "@middlewares/error.middleware.js";
+import authRouter from "@modules/auth/auth.route.js";
+import env from "@config/env.config.js";
 
 const app = express();
 const ApiVersionOne = "/api/v1";

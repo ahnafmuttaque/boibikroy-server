@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { ReasonPhrases } from "http-status-codes/build/es/index.js";
-import { ApiResponse } from "@/utils/ApiResponse.js";
-import { AppError } from "@/utils/AppError.js";
+import { ApiResponse } from "@utils/ApiResponse.js";
+import { AppError } from "@utils/AppError.js";
 
 function isAppError(err: unknown): err is AppError {
   return err instanceof AppError;

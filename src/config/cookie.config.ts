@@ -1,5 +1,5 @@
 import type { CookieOptions } from "express";
-import env from "./env.config.js";
+import env from "@config/env.config.js";
 
 export const cookieConfig: CookieOptions = {
   httpOnly: true,

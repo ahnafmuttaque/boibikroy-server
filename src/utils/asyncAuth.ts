@@ -18,7 +18,7 @@ export const withAuth: (
     if (typeof req === "object" && req !== null && "user" in req) {
       Promise.resolve(fn(req as WithAuth, res, next)).catch(next);
     } else {
-      throw new Error("Invalid authAdmin controller");
+      throw new Error("Invalid auth controller");
     }
   };
 };

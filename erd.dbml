@@ -1,3 +1,4 @@
+
 Project boibikroy {
   database_type: 'PostgreSQL'
   Note: 'A book sell service app for students to efficiently sell & buy books in college campus rather than selling them to libraries to cheap price & buying them at high price'
@@ -10,51 +11,31 @@ Project boibikroy {
 
 Table colleges {
   id integer [primary key]
-  code varchar(50) [not null, unique]
-  name varchar(300) [not null]
-  email varchar(300) [not null]
-  approved varchar(10) [not null]
+  collegeCode smallint [not null, unique]
+  email varchar(150) [not null, unique]
+  collgename text [not null]
+  approved smallint [not null]
+  coltype char(1) [not null]
   address text [not null]
-  upazila varchar(300) [not null]
-  district varchar(300) [not null]
-  division varchar(300) [not null]
-  created_at timestamp [ not null]
-  updated_at timestamp [not null]
-}
-
-Table divisions {
-  id integer [primary key]
-  name_en varchar(100) [not null]
-  bn_name varchar(100) [not null]
-  url varchar(255) [not null]
-  created_at timestamp [ not null]
-  updated_at timestamp [ not null]
-}
-
-Table districts {
-  id integer [primary key]
-  division_id integer [ref: > divisions.id, not null, note: "on delete of division, restrict deletion of division if any district is associated with it"]
-  name_en varchar(100) [not null]
-  bn_name varchar(100) [not null]
-  lat varchar(50) [not null]
-  lon varchar(50) [not null]
-  url varchar(255) [not null]
-  created_at timestamp [ not null]
-  updated_at timestamp [ not null]
+  upazila varchar(100) [not null]
+  districtsname varchar(100) [not null]
+  divname varchar(100) [not null]
+  createdAt timestamp [ not null]
 }
 
 Table upazilas {
-  id integer [primary key]
-  district_id integer [ref: > districts.id, not null, note: "on delete of district, restrict deletion of district if any upazila is associated with it"]
-  name_en varchar(100) [not null]
-  bn_name varchar(100) [not null]
-  url varchar(255) [not null]
-  created_at timestamp [ not null]
-  updated_at timestamp [ not null]
+  id serial [primary key]
+  upazilaId integer [not null, unique]
+  upazilaName varchar(100) [not null]
+  districtId integer [not null]
+  districtName varchar(100) [not null]
+  divisionId integer [not null]
+  divisionName varchar(100) [not null]
+  createdAt timestamp [ not null]
 }
 
 Table education_levels {
-  id integer [primary key]
+  id serial [primary key]
   name varchar(100) [not null]
   department varchar(100) [not null]
   year smallint [not null]
@@ -70,11 +51,11 @@ Table education_levels {
   }
 }
 
-// users table
-Table users {
-  id integer [primary key]
+// students table
+Table students {
+  id serial [primary key]
   full_name varchar(255) [not null]
-  phone_no varchar(14) [not null, unique]
+  contact_no varchar(14) [not null, unique]
   email varchar(255) [not null, unique]
   college_id integer [ref: > colleges.id, not null]
   password_hash text [not null]
@@ -94,7 +75,7 @@ Table books {
   image_key text [not null]
   title varchar(200) [not null]
   author varchar(200) [not null]
-  posted_by integer [ref: > users.id, not null, note: "on delete of user, book will be deleted automatically(cascade)"]
+  posted_by integer [ref: > students.id, not null, note: "on delete of user, book will be deleted automatically(cascade)"]
   edu_level_id integer [ref: > education_levels.id, not null,note: "on delete of education_levels, restrict deletion of education_levels if any user is associated with it"]
   type varchar(201) [not null, note: "class_book | easy_book | suggestion_and_question-bank"]
   publication varchar(200) [not null]
@@ -117,8 +98,8 @@ Table books {
 
 Table saved_campuses {
   id integer [primary key]
-  user_id integer [ref: >users.id, not null, note: "on delete of user, saved_campuses will be deleted automatically(cascade)"]
-  college_id integer [ref: >colleges.id, not null, note: "on delete of college, saved_campuses will be deleted automatically(cascade)"]
+  student_id integer [ref: > students.id, not null, note: "on delete of user, saved_campuses will be deleted automatically(cascade)"]
+  college_id integer [ref: > colleges.id, not null, note: "on delete of college, saved_campuses will be deleted automatically(cascade)"]
   metting_place varchar(300) [not null, default: "college campus"]
   created_at timestamp [not null]
   updated_at timestamp [not null]
@@ -129,7 +110,7 @@ Table admins {
   id integer [primary key]
   email varchar(200) [not null, unique]
   password_hash text [not null]
-  phone_no varchar(15) [not null, unique]
+  contact_no varchar(15) [not null, unique]
   role varchar(100) [not null, default: "moderator", note: "moderator | admin"]
   // only admin can create new admin and moderator. and moderator can only be suspended by admin.
   status varchar(100) [not null, default: "active", note: "active | suspended"]
@@ -151,14 +132,14 @@ Table feedbacks {
 
 Table reports {
   id integer [primary key]
-  type varchar(200) [not null, note: "book | user"]
+  type varchar(200) [not null, note: "book | usbber"]
   book_id integer [ref: >? books.id, note: "on delete of book, report will be deleted automatically(cascade)"]
-  user_id integer [ref: >? users.id, note: "on delete of user, report will be deleted automatically(cascade)"]
-  reported_by integer [ref: > users.id, not null]
+  student_id integer [ref: >? students.id, note: "on delete of user, report will be deleted automatically(cascade)"]
+  reported_by integer [ref: > students.id, not null]
   report_reason text [not null]
   status varchar(200) [not null, default: "pending", note: "pending | reviewed | confirmed"]
   // reviewed_by will be updated whoever changed the status to non-pending.
-  reviewed_by integer [ref: >? admins.id ,note: "admin who reviewed the report"]
+  reviewed_by integer [not null, ref: > admins.id ,note: "admin who reviewed the report"]
   reviewed_at timestamp
   created_at timestamp [not null]
   checks {

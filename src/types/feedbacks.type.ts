@@ -1,4 +1,4 @@
-import type { PostFeedback } from "@/validations/feedbacks.validation.js";
+import type { PostFeedback } from "@validations/feedbacks.validation.js";
 
 const feedbackStatus = ["reviewed", "pending", "mark-as-improvement"] as const;
 

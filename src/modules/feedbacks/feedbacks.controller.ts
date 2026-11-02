@@ -1,11 +1,11 @@
 import type { RequestHandler } from "express";
-import { withAuth } from "@/utils/asyncAuth.js";
+import { withAuth } from "@utils/asyncAuth.js";
 import type { PostFeedback } from "@validations/feedbacks.validation.js";
 
-import * as feedBackService from "./feedbacks.service.js";
+import * as feedBackService from "@modules/feedbacks/feedbacks.service.js";
 import { StatusCodes } from "http-status-codes";
-import { asyncHandler } from "@/utils/asyncHanlder.js";
-import { ApiResponse } from "@/utils/ApiResponse.js";
+import { asyncHandler } from "@utils/asyncHanlder.js";
+import { ApiResponse } from "@utils/ApiResponse.js";
 
 export const getAllFeedbacks: RequestHandler = withAuth(async (req, res) => {});
 

@@ -1,8 +1,8 @@
 import { StatusCodes } from "http-status-codes";
-import { getAdminByEmail } from "./auth.repository.js";
+import { getAdminByEmail } from "@modules/auth/auth.repository.js";
 import bcrypt from "bcryptjs";
-import { AppError } from "@/utils/AppError.js";
-import type { AdminLogin } from "@/validations/admin.validation.js";
+import { AppError } from "@utils/AppError.js";
+import type { AdminLogin } from "@validations/admin.validation.js";
 
 export async function adminLoginService(credentials: AdminLogin) {
   const { email, password } = credentials;

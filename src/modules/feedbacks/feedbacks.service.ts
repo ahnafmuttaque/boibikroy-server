@@ -1,5 +1,5 @@
-import type { Feedback } from "@/types/feedbacks.type.js";
-import type { PostFeedback } from "@/validations/feedbacks.validation.js";
+import type { Feedback } from "@typedefs/feedbacks.type.js";
+import type { PostFeedback } from "@validations/feedbacks.validation.js";
 
 const feedbacks: Feedback[] = [];
 

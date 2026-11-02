@@ -4,7 +4,7 @@ import {
   getSingleFeedback,
   postAddFeedbacks,
   postUpdateFeedbackStatus,
-} from "./feedbacks.controller.js";
+} from "@modules/feedbacks/feedbacks.controller.js";
 import { PostFeedbackSchema } from "@validations/feedbacks.validation.js";
 import validateBodyWithSchema from "@middlewares/validateSchema.middleware.js";
 

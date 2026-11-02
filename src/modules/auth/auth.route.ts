@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { postCreateAdmin, postLoginAdmin } from "./auth.controller.js";
+import { postCreateAdmin, postLoginAdmin } from "@modules/auth/auth.controller.js";
 import {
   AdminLoginSchema,
   AdminRegisterSchema,
-} from "@/validations/admin.validation.js";
-import validateBodyWithSchema from "@/middlewares/validateSchema.middleware.js";
+} from "@validations/admin.validation.js";
+import validateBodyWithSchema from "@middlewares/validateSchema.middleware.js";
 
 const router = Router();
 

@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import type { _ZodType } from "zod";
-import { AppError } from "@/utils/AppError.js";
+import { AppError } from "@utils/AppError.js";
 import { StatusCodes } from "http-status-codes";
 
 const validateBodyWithSchema = (zodSchema: _ZodType) => {

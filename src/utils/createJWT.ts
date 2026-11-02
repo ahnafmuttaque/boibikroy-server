@@ -1,4 +1,4 @@
-import env from "@/config/env.config.js";
+import env from "@config/env.config.js";
 import jwt from "jsonwebtoken";
 
 export function createJWT(payload: Record<string, any>) {
