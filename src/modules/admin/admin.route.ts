@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { postCreateAdmin } from "@modules/admin/admin.controller.js";
+import {
+  getAdminById,
+  postCreateAdmin,
+} from "@modules/admin/admin.controller.js";
 import validateBodyWithSchema from "@middlewares/validateSchema.middleware.js";
 import { AdminRegisterSchema } from "@validations/admin.validation.js";
 import { validateRole } from "@middlewares/validateRole.middleware.js";
@@ -14,5 +17,9 @@ router.post(
   validateRole("admin"),
   postCreateAdmin,
 );
+
+router.get("/:id", validateJWt, validateRole("admin"), getAdminById);
+
+router.patch("/", validateJWt, validateRole("admin", "moderator"));
 
 export default router;

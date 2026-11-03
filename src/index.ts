@@ -7,11 +7,12 @@ import authRouter from "@modules/auth/auth.route.js";
 import env from "@config/env.config.js";
 import adminRouter from "@modules/admin/admin.route.js";
 import cookieParser from "cookie-parser";
+import morgan from "morgan";
 
 const app = express();
 const ApiVersionOne = "/api/v1";
 const authRoute = `${ApiVersionOne}/auth`;
-const adminRoute = `${ApiVersionOne}/admin`;
+const adminRoute = `${ApiVersionOne}/admins`;
 
 app.get("/", async (req, res) => {
   res.json({
@@ -19,6 +20,7 @@ app.get("/", async (req, res) => {
     message: "welcome to boibikroy",
   });
 });
+app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(express.json());
 
