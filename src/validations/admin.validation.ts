@@ -21,5 +21,18 @@ export const AdminRegisterSchema = z.object({
     ),
 });
 
+export const AdminPatchSchema = z.object({
+  full_name: z.string().trim().min(2).max(100),
+  contact_no: z
+      .string()
+      .trim()
+      .regex(
+          BD_PHONE_REGEX,
+          "Invalid Bangladeshi phone number (e.g. +8801XXXXXXXXX)",
+      ),
+})
+
+
+export type AdminPatch = z.infer<typeof AdminPatchSchema>;
 export type AdminLogin = z.infer<typeof AdminLoginSchema>;
 export type AdminRegister = z.infer<typeof AdminRegisterSchema>;

@@ -1,10 +1,11 @@
 import { Router } from "express";
 import {
   getAdminById,
+  patchAdmin,
   postCreateAdmin,
 } from "@modules/admin/admin.controller.js";
 import validateBodyWithSchema from "@middlewares/validateSchema.middleware.js";
-import { AdminRegisterSchema } from "@validations/admin.validation.js";
+import {AdminPatchSchema, AdminRegisterSchema} from "@validations/admin.validation.js";
 import { validateRole } from "@middlewares/validateRole.middleware.js";
 import { validateJWt } from "@middlewares/auth.middleware.js";
 
@@ -20,6 +21,6 @@ router.post(
 
 router.get("/:id", validateJWt, validateRole("admin"), getAdminById);
 
-router.patch("/", validateJWt, validateRole("admin", "moderator"));
+router.patch("/", validateBodyWithSchema(AdminPatchSchema), validateJWt, validateRole("admin", "moderator"), patchAdmin);
 
 export default router;

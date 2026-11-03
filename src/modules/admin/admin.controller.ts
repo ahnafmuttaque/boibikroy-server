@@ -1,8 +1,8 @@
-import type { AdminRegister } from "@validations/admin.validation.js";
+import type {AdminPatch, AdminRegister} from "@validations/admin.validation.js";
 import type { NextFunction, Request, Response } from "express";
 import {
-  createAdminService,
-  getAdminServiceWithId,
+    createAdminService,
+    getAdminServiceWithId, patchAdminService,
 } from "@modules/admin/admin.service.js";
 import { ApiResponse } from "@utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
@@ -29,4 +29,9 @@ export const getAdminById = asyncHandler(async (req, res, next) => {
   new ApiResponse(StatusCodes.OK, result).send(res);
 });
 
-export const patchAdmin = asyncHandler(async (req, res, next) => {});
+export const patchAdmin = asyncHandler(async (req, res, next) => {
+    const adminId = req.user!.id;
+    const patchBody:AdminPatch = req.body;
+    const returningAdmin = await patchAdminService(patchBody, adminId);
+    new ApiResponse(StatusCodes.OK, returningAdmin).send(res)
+});

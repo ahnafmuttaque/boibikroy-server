@@ -1,8 +1,12 @@
-import type { AdminRegister } from "@validations/admin.validation.js";
+import type {
+  AdminPatch,
+  AdminRegister,
+} from "@validations/admin.validation.js";
 import {
   insertDBAdmin,
   getDBAdminByEmail,
   getDBAdminById,
+  updateFullNameAndContactDBAdmin,
 } from "./admin.repository.js";
 import { AppError } from "@utils/AppError.js";
 import { StatusCodes } from "http-status-codes";
@@ -33,5 +37,25 @@ export async function getAdminServiceWithId(id: number) {
       ReasonPhrases.UNPROCESSABLE_ENTITY,
     );
   }
-  return desiredAdmin;
+  const { id: _, ...rest } = desiredAdmin;
+  return rest;
+}
+
+export async function patchAdminService(
+  patchBody: AdminPatch,
+  adminId: number,
+) {
+  const desiredAdmin = await getDBAdminById(adminId);
+  if (!desiredAdmin) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "not found");
+  }
+  console.log(desiredAdmin.id, adminId);
+  if (desiredAdmin.id !== adminId) {
+    throw new AppError(StatusCodes.FORBIDDEN, ReasonPhrases.FORBIDDEN);
+  }
+  const updateResult = await updateFullNameAndContactDBAdmin(
+    patchBody,
+    adminId,
+  );
+  return updateResult!;
 }
