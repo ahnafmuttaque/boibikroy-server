@@ -16,8 +16,6 @@ import { ApiResponse } from "@utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
 import { asyncHandler } from "@utils/asyncHanlder.js";
 import { getPositiveNumberFromString } from "@validations/number.validation.js";
-import { AppError } from "@utils/AppError.js";
-import { ReasonPhrases } from "http-status-codes/build/es/reason-phrases.js";
 
 export const postCreateAdmin = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -29,8 +27,9 @@ export const postCreateAdmin = asyncHandler(
 
 export const getAdminById = asyncHandler(async (req, res, next) => {
   const idStr = req.params.id;
-  const id = getPositiveNumberFromString(idStr);
-  const result = await getAdminServiceWithId(id);
+  const getAdminId = getPositiveNumberFromString(idStr);
+  const masterAdminId = req.user!.id;
+  const result = await getAdminServiceWithId(getAdminId, masterAdminId);
   new ApiResponse(StatusCodes.OK, result).send(res);
 });
 

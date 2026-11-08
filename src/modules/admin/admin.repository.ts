@@ -70,8 +70,8 @@ export async function getAllDBAdmins(filters: GetAdminQuery) {
   const values: Array<string> = [];
   const conditions: Array<string> = [];
   if (email) {
-    values.push(email.trim());
-    conditions.push(`email=$${values.length}`);
+    values.push(`%${email.trim().toLowerCase()}%`);
+    conditions.push(`email ilike $${values.length}`);
   }
   if (status) {
     values.push(status);
@@ -84,8 +84,7 @@ export async function getAllDBAdmins(filters: GetAdminQuery) {
   }
 
   const whereClause = `where role <> 'admin' ${conditions.length === 0 ? "" : " AND " + conditions.join(" AND ")}`;
-  const query = `SELECT full_name, email,contact_no, role, created_at , updated_at FROM admins ${whereClause}`;
-  console.log("query", query);
+  const query = `SELECT full_name, email, contact_no, role, created_at , updated_at FROM admins ${whereClause}`;
   return db.query<Admin>(query, values);
 }
 
@@ -93,15 +92,11 @@ export async function getDBAdminForSuspension(id: number) {
   return db.query<Admin>(`SELECT * FROM admins WHERE id = $1;`, [id]);
 }
 
-export async function suspendDBAdmin(suspendId: number, adminId: number) {
-  const result = await db.query<Admin>(
+export async function suspendDBAdmin(suspendId: number, masterAdminId: number) {
+  return db.query<Admin>(
     `
-UPDATE admins SET suspended_by = $1, suspended_at = CURRENT_TIMESTAMP WHERE id =$2  RETURNING full_name, email, contact_no, role, created_at, updated_at;
+  UPDATE admins SET suspended_by = $1, suspended_at = CURRENT_TIMESTAMP WHERE id =$2  RETURNING full_name, email, contact_no, role, created_at, updated_at;
 `,
-    [adminId, suspendId],
+    [masterAdminId, suspendId],
   );
-  if (!result.rowCount) {
-    return null;
-  }
-  return result.rows[0]!;
 }
