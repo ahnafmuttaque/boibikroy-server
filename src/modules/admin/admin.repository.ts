@@ -10,15 +10,12 @@ export async function insertDBAdmin(credentials: AdminRegister) {
   const { full_name, email, password, contact_no } = credentials;
   const query = `
     INSERT INTO admins (full_name, email, password_hash, contact_no)
-      VALUES
-          ($1, $2, $3, $4) RETURNING id;
-    `;
-  return db.query<Pick<Admin, "id">>(query, [
-    full_name,
-    email,
-    password,
-    contact_no,
-  ]);
+    VALUES ($1, $2, $3, $4)
+    RETURNING id, full_name, email, contact_no, role, status, created_at, updated_at;`;
+
+  return db.query<
+    Omit<Admin, "password_hash" | "suspended_by" | "suspended_at">
+  >(query, [full_name, email, password, contact_no]);
 }
 
 export async function getDBAdminByEmail(email: string) {
@@ -43,14 +40,29 @@ export async function updateFullNameAndContactDBAdmin(
   patchBody: AdminPatch,
   id: number,
 ) {
-  const currentTime = new Date().toISOString();
   const { full_name, contact_no } = patchBody;
 
-  const query = `UPDATE admins SET full_name=$1, contact_no=$2, updated_at=$3 WHERE id=$4 RETURNING full_name, contact_no, email, role, status, created_at, updated_at;`;
+  const fields: Array<string> = [];
+  const values: Array<any> = [];
+
+  if (full_name !== undefined) {
+    values.push(full_name);
+    fields.push(`full_name = $${values.length}`);
+  }
+  if (contact_no !== undefined) {
+    values.push(contact_no);
+    fields.push(`contact_no = $${values.length}`);
+  }
+  fields.push(`updated_at = CURRENT_TIMESTAMP`);
+
+  values.push(id);
+  const idIndex = values.length;
+
+  const query = `UPDATE admins SET ${fields.join(",")} WHERE id=$${idIndex} RETURNING full_name, contact_no, email, role, status, created_at, updated_at;`;
 
   return db.query<
-    Exclude<Admin, "suspended_by" | "suspended_at" | "password_hash" | "id">
-  >(query, [full_name, contact_no, currentTime, id]);
+    Omit<Admin, "suspended_by" | "suspended_at" | "password_hash" | "id">
+  >(query, values);
 }
 
 export async function deleteDBAdminById(id: number) {
@@ -58,11 +70,7 @@ export async function deleteDBAdminById(id: number) {
   DELETE FROM admins WHERE id = $1;
 `;
 
-  const result = await db.query(query, [id]);
-  if (result.rowCount === 0) {
-    return null;
-  }
-  return result.rows[0]!;
+  return db.query(query, [id]);
 }
 
 export async function getAllDBAdmins(filters: GetAdminQuery) {
@@ -84,7 +92,7 @@ export async function getAllDBAdmins(filters: GetAdminQuery) {
   }
 
   const whereClause = `where role <> 'admin' ${conditions.length === 0 ? "" : " AND " + conditions.join(" AND ")}`;
-  const query = `SELECT full_name, email, contact_no, role, created_at , updated_at FROM admins ${whereClause}`;
+  const query = `SELECT id, full_name, email, contact_no, role, status, created_at , updated_at FROM admins ${whereClause}`;
   return db.query<Admin>(query, values);
 }
 
@@ -95,8 +103,10 @@ export async function getDBAdminForSuspension(id: number) {
 export async function suspendDBAdmin(suspendId: number, masterAdminId: number) {
   return db.query<Admin>(
     `
-  UPDATE admins SET suspended_by = $1, suspended_at = CURRENT_TIMESTAMP WHERE id =$2  RETURNING full_name, email, contact_no, role, created_at, updated_at;
-`,
+  UPDATE admins SET status = 'suspend', suspended_by = $1, suspended_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+  WHERE id =$2
+  RETURNING id, full_name, email, contact_no, role, status, suspended_by, suspended_at, created_at, updated_at;
+    `,
     [masterAdminId, suspendId],
   );
 }

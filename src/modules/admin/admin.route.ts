@@ -21,38 +21,32 @@ import { validateJWt } from "@middlewares/auth.middleware.js";
 
 const router = Router();
 
+router.use(validateJWt);
+
 router.get(
   "/",
-  validateQueryWithSchema(GetAdminQuerySchema),
-  validateJWt,
   validateRole("admin"),
+  validateQueryWithSchema(GetAdminQuerySchema),
   getAllAdmins,
 );
-router.get("/:id", validateJWt, validateRole("admin"), getAdminById);
+router.get("/:id", validateRole("admin"), getAdminById);
 
 router.post(
   "/register",
-  validateBodyWithSchema(AdminRegisterSchema),
-  validateJWt,
   validateRole("admin"),
+  validateBodyWithSchema(AdminRegisterSchema),
   postCreateAdmin,
 );
 
-router.post(
-  "/:id/suspend",
-  validateJWt,
-  validateRole("admin"),
-  postSuspendAdmin,
-);
+router.post("/:id/suspend", validateRole("admin"), postSuspendAdmin);
 
 router.patch(
   "/me",
-  validateBodyWithSchema(AdminPatchSchema),
-  validateJWt,
   validateRole("admin", "moderator"),
+  validateBodyWithSchema(AdminPatchSchema),
   patchAdmin,
 );
 
-router.delete("/:id", validateJWt, validateRole("admin"), deleteAdmin);
+router.delete("/:id", validateRole("admin"), deleteAdmin);
 
 export default router;

@@ -2,7 +2,7 @@ import { AppError } from "@utils/AppError.js";
 import { StatusCodes } from "http-status-codes";
 import z from "zod";
 
-const N = z.coerce.number<number>();
+const N = z.coerce.number().int().positive();
 
 export function getPositiveNumberFromString(str: any) {
   const result = N.safeParse(str);

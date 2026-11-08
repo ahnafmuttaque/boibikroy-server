@@ -33,20 +33,22 @@ export async function createAdminService(registerCredentials: AdminRegister) {
   }
   // hash the password
   registerCredentials.password = await bcrypt.hash(password, 12);
-  await insertDBAdmin(registerCredentials);
-  const { password: p, ...res } = registerCredentials;
-  return res;
+  const registerQuery = await insertDBAdmin(registerCredentials);
+  return registerQuery.rows[0]!;
 }
 
-export async function getAdminServiceWithId(getAdminId: number, masterAdminId: number) {
+export async function getAdminServiceWithId(
+  getAdminId: number,
+  masterAdminId: number,
+) {
   const queryResult = await getDBAdminById(getAdminId);
-  if (queryResult.rows.length) {
+  if (!queryResult.rows.length) {
     throw new AppError(StatusCodes.NOT_FOUND, ReasonPhrases.NOT_FOUND);
   }
   // check whether it's the master admin himself
-  const desiredAdmin  = queryResult.rows[0]!;
+  const desiredAdmin = queryResult.rows[0]!;
   if (desiredAdmin.id === masterAdminId || desiredAdmin.role === "admin") {
-    throw new AppError(StatusCodes.CONFLICT, ReasonPhrases.CONFLICT);
+    throw new AppError(StatusCodes.FORBIDDEN, ReasonPhrases.FORBIDDEN);
   }
   // returning the desired admin
   const { id: _, ...rest } = queryResult.rows[0]!;
@@ -57,23 +59,13 @@ export async function patchAdminService(
   patchBody: AdminPatch,
   adminId: number,
 ) {
-  // check whether the admin exists
-  const queryResult = await getDBAdminById(adminId);
-  if (!queryResult.rows.length) {
-    // throw error cause the admin doesn't exist
-    throw new AppError(StatusCodes.NOT_FOUND, ReasonPhrases.NOT_FOUND);
-  }
-  // admin exists then updating the admin
   const updateResult = await updateFullNameAndContactDBAdmin(
     patchBody,
     adminId,
   );
   // check whether the request was successful
   if (!updateResult.rows.length) {
-    throw new AppError(
-      StatusCodes.UNPROCESSABLE_ENTITY,
-      ReasonPhrases.UNPROCESSABLE_ENTITY,
-    );
+    throw new AppError(StatusCodes.NOT_FOUND, ReasonPhrases.NOT_FOUND);
   }
   // return updated admin infos
   return updateResult.rows[0]!;
@@ -99,7 +91,7 @@ export async function deleteAdminService(
     desiredAdmin.email === masterAdminEmail ||
     desiredAdmin.role === "admin"
   ) {
-    throw new AppError(StatusCodes.CONFLICT, ReasonPhrases.CONFLICT);
+    throw new AppError(StatusCodes.FORBIDDEN, ReasonPhrases.FORBIDDEN);
   }
   // deleting the admin cause it's not the master admin
   await deleteDBAdminById(deleteId);
@@ -123,7 +115,7 @@ export async function suspendAdminService(
     desiredAdmin.id === masterAdminId
   ) {
     // throwing error cause the suspended admin is the master admin
-    throw new AppError(StatusCodes.CONFLICT, ReasonPhrases.CONFLICT);
+    throw new AppError(StatusCodes.FORBIDDEN, ReasonPhrases.FORBIDDEN);
   }
   // now suspend the admin
   const suspendResult = await suspendDBAdmin(suspendId, masterAdminId);

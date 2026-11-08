@@ -21,16 +21,18 @@ export const AdminRegisterSchema = z.object({
     ),
 });
 
-export const AdminPatchSchema = z.object({
-  full_name: z.string().trim().min(2).max(100),
-  contact_no: z
-    .string()
-    .trim()
-    .regex(
-      BD_PHONE_REGEX,
-      "Invalid Bangladeshi phone number (e.g. +8801XXXXXXXXX)",
-    ),
-});
+export const AdminPatchSchema = z
+  .object({
+    full_name: z.string().trim().min(2).max(100).optional(),
+    contact_no: z
+      .string()
+      .trim()
+      .regex(BD_PHONE_REGEX, "Invalid phone number")
+      .optional(),
+  })
+  .refine((data) => data.full_name || data.contact_no, {
+    message: "At least one field must be provided to update",
+  });
 
 export const GetAdminQuerySchema = z.object({
   status: z.optional(z.literal(["active", "suspend"])),

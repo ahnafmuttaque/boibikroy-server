@@ -12,4 +12,5 @@ export type Admin = {
   suspended_by?: number;
   suspended_at?: string;
   created_at: string;
+  updated_at: string;
 };

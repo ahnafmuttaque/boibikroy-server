@@ -12,6 +12,7 @@ const validateBodyWithSchema = (zodSchema: _ZodType) => {
         result.error.issues[0]?.message || ReasonPhrases.BAD_REQUEST;
       return next(new AppError(StatusCodes.BAD_REQUEST, error));
     }
+    req.body = result.data;
     next();
   };
 };
