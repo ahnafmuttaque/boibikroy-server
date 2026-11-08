@@ -6,7 +6,7 @@ import {
   postUpdateFeedbackStatus,
 } from "@modules/feedbacks/feedbacks.controller.js";
 import { PostFeedbackSchema } from "@validations/feedbacks.validation.js";
-import validateBodyWithSchema from "@middlewares/validateSchema.middleware.js";
+import { validateBodyWithSchema } from "@middlewares/validateSchema.middleware.js";
 
 const router = Router();
 

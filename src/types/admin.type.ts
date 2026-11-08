@@ -3,6 +3,7 @@ type Status = "active" | "suspend";
 
 export type Admin = {
   id: number;
+  full_name: string;
   email: string;
   password_hash: string;
   contact_no: string;
