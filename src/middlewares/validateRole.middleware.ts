@@ -8,7 +8,7 @@ export function validateRole(...roles: Role[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     const candidateRole = (req as any).user.role;
     if (!roles.includes(candidateRole)) {
-      return next(new AppError(StatusCodes.UNAUTHORIZED, "permission denied"));
+      return next(new AppError(StatusCodes.FORBIDDEN, "permission denied"));
     }
     next();
   };
