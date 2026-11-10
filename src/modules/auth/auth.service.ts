@@ -1,8 +1,15 @@
 import { StatusCodes } from "http-status-codes";
-import { getAdminByEmail } from "@modules/auth/auth.repository.js";
+import {
+  createDBStudent,
+  getAdminByEmail,
+  getClgEduAndUpazliaExistance,
+  getDBStudentByContactNo,
+  getDBStudentByEmail,
+} from "@modules/auth/auth.repository.js";
 import bcrypt from "bcryptjs";
 import { AppError } from "@utils/AppError.js";
 import type { AdminLogin } from "@validations/admin.validation.js";
+import type { StudentRegister } from "@validations/student.validation.js";
 
 export async function adminLoginService(credentials: AdminLogin) {
   const { email, password } = credentials;
@@ -21,5 +28,46 @@ export async function adminLoginService(credentials: AdminLogin) {
   if (!isValidPassword) {
     throw new AppError(StatusCodes.UNAUTHORIZED, "Invalid email or password");
   }
+
   return requestedAdmin;
+}
+
+export async function studentRegisterService(
+  createStudentInput: StudentRegister,
+) {
+  const { email, college_id, edu_level_id, upazila_id, password, contact_no } =
+    createStudentInput;
+
+  const [stuByEmailRes, stuByPhoneRes] = await Promise.all([
+    getDBStudentByEmail(email),
+    getDBStudentByContactNo(contact_no),
+  ]);
+  if (stuByEmailRes.rows.length) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "Email already exists");
+  }
+  if (stuByPhoneRes.rows.length) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "Phone number already exists");
+  }
+
+  const clgAndEduExistanceResult = await getClgEduAndUpazliaExistance(
+    college_id,
+    edu_level_id,
+    upazila_id,
+  );
+  const { college_exists, education_levels_exists, upazila_exists } =
+    clgAndEduExistanceResult.rows[0]!;
+
+  if (!college_exists || !education_levels_exists || !upazila_exists) {
+    throw new AppError(
+      StatusCodes.BAD_REQUEST,
+      `Invalid ${!college_exists ? "college" : !education_levels_exists ? "standard" : "upazila"}`,
+    );
+  }
+  createStudentInput.password = await bcrypt.hash(password, 12);
+  const createStudentResult = await createDBStudent(createStudentInput);
+  const insertedStudent = {
+    ...createStudentInput,
+    ...createStudentResult.rows[0]!,
+  };
+  return insertedStudent;
 }

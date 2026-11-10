@@ -31,5 +31,4 @@ export const validateQueryWithSchema = (zodSchema: _ZodType) => {
     next();
   };
 };
-
 export { validateBodyWithSchema };
