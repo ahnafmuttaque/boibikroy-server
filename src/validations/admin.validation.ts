@@ -35,7 +35,7 @@ export const AdminPatchSchema = z
   });
 
 export const GetAdminQuerySchema = z.object({
-  status: z.optional(z.literal(["active", "suspend"])),
+  status: z.optional(z.literal(["active", "inactive", "suspended"])),
   email: z.optional(
     z.string().trim().regex(EMAIL_REGEX, "Invalid email address").max(254),
   ),

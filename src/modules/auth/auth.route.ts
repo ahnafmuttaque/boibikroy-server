@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   postLoginAdmin,
   postLoginStudents,
+  postLogout,
   postRegisterStudents,
 } from "@modules/auth/auth.controller.js";
 import { AdminLoginSchema } from "@validations/admin.validation.js";
@@ -30,5 +31,7 @@ router.post(
   validateBodyWithSchema(StudentLoginSchema),
   postLoginStudents,
 );
+
+router.post("/logout", postLogout);
 
 export default router;

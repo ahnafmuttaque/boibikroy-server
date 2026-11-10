@@ -112,7 +112,7 @@ Table admins {
   contact_no varchar(15) [not null, unique]
   role varchar(100) [not null, default: "moderator", note: "moderator | admin"]
   // only admin can create new admin and moderator. and moderator can only be suspended by admin.
-  status varchar(100) [not null, default: "active", note: "active | suspended"]
+  status varchar(100) [not null, default: "active", note: "active | inactive |  suspended"]
   suspended_at timestamp
   suspended_by integer [ref: >? admins.id] // it will always be a admin so we can remove this field also
   created_at timestamp [not null]

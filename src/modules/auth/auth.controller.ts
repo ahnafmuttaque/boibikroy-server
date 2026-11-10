@@ -57,3 +57,10 @@ export const postLoginStudents = asyncHandler(async (req, res) => {
   res.cookie("token", token, cookieConfig);
   new ApiResponse(StatusCodes.OK, desiredStudent).send(res);
 });
+
+export const postLogout = asyncHandler(async (req, res) => {
+  res.clearCookie("token", cookieConfig);
+  new ApiResponse(StatusCodes.OK, {
+    message: "logout successful",
+  }).send(res);
+});

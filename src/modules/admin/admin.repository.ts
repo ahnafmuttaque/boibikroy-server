@@ -103,7 +103,7 @@ export async function getDBAdminForSuspension(id: number) {
 export async function suspendDBAdmin(suspendId: number, masterAdminId: number) {
   return db.query<Admin>(
     `
-  UPDATE admins SET status = 'suspend', suspended_by = $1, suspended_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+  UPDATE admins SET status = 'suspended', suspended_by = $1, suspended_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
   WHERE id =$2
   RETURNING id, full_name, email, contact_no, role, status, suspended_by, suspended_at, created_at, updated_at;
     `,

@@ -31,6 +31,12 @@ export async function adminLoginService(credentials: AdminLogin) {
   if (!isValidPassword) {
     throw new AppError(StatusCodes.UNAUTHORIZED, "Invalid email or password");
   }
+  if (requestedAdmin.status === "suspended") {
+    throw new AppError(
+      StatusCodes.FORBIDDEN,
+      "Your account has been suspended",
+    );
+  }
 
   return requestedAdmin;
 }

@@ -1,5 +1,5 @@
 type Role = "moderator" | "admin";
-type Status = "active" | "suspend";
+type Status = "active" | "suspended" | "inactive";
 
 export type Admin = {
   id: number;
