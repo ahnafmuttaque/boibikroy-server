@@ -1,5 +1,6 @@
 import db from "@config/db.config.js";
 import type { Admin } from "@typedefs/admin.type.js";
+import type { Student } from "@typedefs/student.type.js";
 import type { StudentRegister } from "@validations/student.validation.js";
 
 export async function getAdminByEmail(email: string) {
@@ -25,9 +26,11 @@ export async function getDBStudentByContactNo(contactNo: string) {
   );
 }
 export async function getDBStudentByEmail(email: string) {
-  return db.query(
+  return db.query<
+    Omit<Student, "suspended_by" | "suspend_reason" | "suspended_at">
+  >(
     `
-  SELECT * FROM students
+  SELECT id, full_name, contact_no, email, college_id, password_hash, role, edu_level_id, status, upazila_id, address, created_at, updated_at  FROM students
   WHERE email = $1;
   `,
     [email],

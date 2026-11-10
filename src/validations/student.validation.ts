@@ -4,13 +4,7 @@ import { EMAIL_REGEX } from "./admin.validation.js";
 const BD_PHONE_REGEX = /^\+880[0-9]{10}$/;
 
 export const StudentLoginSchema = z.object({
-  contact_no: z
-    .string()
-    .trim()
-    .regex(
-      BD_PHONE_REGEX,
-      "Invalid Bangladeshi phone number (e.g. +8801XXXXXXXXX)",
-    ),
+  email: z.string().trim().regex(EMAIL_REGEX, "Invalid email address").max(254),
   password: z
     .string()
     .trim()
