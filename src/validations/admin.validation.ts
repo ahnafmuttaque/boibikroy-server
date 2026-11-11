@@ -8,6 +8,17 @@ export const AdminLoginSchema = z.object({
   password: z.string().trim().min(6).max(40),
 });
 
+export const AdminUpdatePasswordSchema = z
+  .object({
+    old_password: z.string().trim().min(6).max(40),
+    new_password: z.string().trim().min(6).max(40),
+    confirm_password: z.string().trim().min(6).max(40),
+  })
+  .refine((data) => data.new_password === data.confirm_password, {
+    message: "New password and confirm password do not match",
+    path: ["confirm_password"],
+  });
+
 export const AdminRegisterSchema = z.object({
   full_name: z.string().trim().min(2).max(100),
   email: z.string().trim().regex(EMAIL_REGEX, "Invalid email address").max(254),
@@ -46,3 +57,4 @@ export type AdminPatch = z.infer<typeof AdminPatchSchema>;
 export type AdminLogin = z.infer<typeof AdminLoginSchema>;
 export type AdminRegister = z.infer<typeof AdminRegisterSchema>;
 export type GetAdminQuery = z.infer<typeof GetAdminQuerySchema>;
+export type AdminUpdatePassword = z.infer<typeof AdminUpdatePasswordSchema>;

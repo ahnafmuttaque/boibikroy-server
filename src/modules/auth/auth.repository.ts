@@ -16,6 +16,14 @@ export async function getAdminByEmail(email: string) {
   return result.rows[0]!;
 }
 
+export async function getDBAdminById(id: number) {
+  const query = `
+  SELECT password_hash,  status FROM admins
+    WHERE id = $1;
+    `;
+  return db.query<Pick<Admin, "password_hash" | "status">>(query, [id]);
+}
+
 export async function getDBStudentByContactNo(contactNo: string) {
   return db.query(
     `
@@ -25,6 +33,19 @@ export async function getDBStudentByContactNo(contactNo: string) {
     [contactNo],
   );
 }
+
+export async function updateDBAdminPasswordById(
+  adminId: number,
+  newPassword: string,
+) {
+  const query = `
+    UPDATE admins SET password_hash = $1, updated_at = DEFAULT
+      WHERE id = $2;
+    `;
+
+  return db.query(query, [newPassword, adminId]);
+}
+
 export async function getDBStudentByEmail(email: string) {
   return db.query<
     Omit<Student, "suspended_by" | "suspend_reason" | "suspended_at">
@@ -104,4 +125,25 @@ export async function createDBStudent(createStudentInput: StudentRegister) {
     upazila_id,
     address ?? null,
   ]);
+}
+
+export async function getDBStudentById(studentId: number) {
+  const query = `
+    SELECT  password_hash, status FROM students
+      WHERE id = $1;
+    `;
+  return db.query<Pick<Student, "password_hash" | "status">>(query, [
+    studentId,
+  ]);
+}
+
+export async function updateDBStudentPassword(
+  studentId: number,
+  newPassword: string,
+) {
+  const query = `
+    UPDATE students SET password_hash = $1, updated_at = DEFAULT
+      WHERE id = $2;
+    `;
+  return db.query(query, [newPassword, studentId]);
 }

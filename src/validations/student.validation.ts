@@ -12,6 +12,29 @@ export const StudentLoginSchema = z.object({
     .max(40, "Password must be at most 40 characters"),
 });
 
+export const StudentUpdatePasswordSchema = z
+  .object({
+    old_password: z
+      .string()
+      .trim()
+      .min(6, "Old password must be at least 6 characters")
+      .max(40, "Old password must be at most 40 characters"),
+    new_password: z
+      .string()
+      .trim()
+      .min(6, "New password must be at least 6 characters")
+      .max(40, "New password must be at most 40 characters"),
+    confirm_password: z
+      .string()
+      .trim()
+      .min(6, "Confirm password must be at least 6 characters")
+      .max(40, "Confirm password must be at most 40 characters"),
+  })
+  .refine((data) => data.new_password === data.confirm_password, {
+    message: "New password and confirm password do not match",
+    path: ["confirm_password"],
+  });
+
 export const StudentRegisterSchema = z.object({
   full_name: z
     .string()
@@ -43,3 +66,4 @@ export const StudentRegisterSchema = z.object({
 
 export type StudentLogin = z.infer<typeof StudentLoginSchema>;
 export type StudentRegister = z.infer<typeof StudentRegisterSchema>;
+export type StudentUpdatePassword = z.infer<typeof StudentUpdatePasswordSchema>;

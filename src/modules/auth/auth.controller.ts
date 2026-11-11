@@ -1,9 +1,14 @@
 import type { NextFunction, Request, Response } from "express";
-import type { AdminLogin } from "@validations/admin.validation.js";
+import type {
+  AdminLogin,
+  AdminUpdatePassword,
+} from "@validations/admin.validation.js";
 import {
   adminLoginService,
+  adminUpdatePassService,
   studentLoginService,
   studentRegisterService,
+  studentUpdatePasswordService,
 } from "@modules/auth/auth.service.js";
 import { asyncHandler } from "@utils/asyncHanlder.js";
 import { ApiResponse } from "@utils/ApiResponse.js";
@@ -13,6 +18,7 @@ import { cookieConfig } from "@config/cookie.config.js";
 import type {
   StudentLogin,
   StudentRegister,
+  StudentUpdatePassword,
 } from "@validations/student.validation.js";
 
 export const postLoginAdmin = asyncHandler(
@@ -30,6 +36,14 @@ export const postLoginAdmin = asyncHandler(
     new ApiResponse(StatusCodes.OK, rest).send(res);
   },
 );
+
+export const postUpdateAdminPassword = asyncHandler(async (req, res) => {
+  const passInput: AdminUpdatePassword = req.body;
+  const adminId = req.user!.id;
+  await adminUpdatePassService(adminId, passInput);
+  res.clearCookie("token", cookieConfig);
+  new ApiResponse(StatusCodes.NO_CONTENT).send(res);
+});
 
 export const postRegisterStudents = asyncHandler(async (req, res) => {
   const createStudentInput: StudentRegister = req.body;
@@ -63,4 +77,12 @@ export const postLogout = asyncHandler(async (req, res) => {
   new ApiResponse(StatusCodes.OK, {
     message: "logout successful",
   }).send(res);
+});
+
+export const postUpdateStudentPassword = asyncHandler(async (req, res) => {
+  const passInput: StudentUpdatePassword = req.body;
+  const studentId = req.user!.id;
+  await studentUpdatePasswordService(studentId, passInput);
+  res.clearCookie("token", cookieConfig);
+  new ApiResponse(StatusCodes.NO_CONTENT).send(res);
 });
