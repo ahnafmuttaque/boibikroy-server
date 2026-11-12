@@ -5,6 +5,7 @@ import feedbackRouter from "@modules/feedbacks/feedbacks.route.js";
 import errorMiddleware from "@middlewares/error.middleware.js";
 import authRouter from "@modules/auth/auth.route.js";
 import adminRouter from "@modules/admin/admin.route.js";
+import studentRouter from "@modules/students/student.route.js";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import env from "@config/env.config.js";
@@ -13,6 +14,7 @@ const app = express();
 const ApiVersionOne = "/api/v1";
 const authRoute = `${ApiVersionOne}/auth`;
 const adminRoute = `${ApiVersionOne}/admins`;
+const studentRoute = `${ApiVersionOne}/students`;
 
 app.get("/", async (req, res) => {
   res.json({
@@ -31,6 +33,7 @@ app.use(express.json());
 app.use(authRoute, authRouter);
 app.use(ApiVersionOne, feedbackRouter);
 app.use(adminRoute, adminRouter);
+app.use(studentRoute, studentRouter);
 
 // not found route
 app.use((req, res) => {
