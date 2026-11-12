@@ -20,8 +20,13 @@ export class ApiResponse {
 export class PaginatedResponse {
   constructor(
     public statusCode: number,
-    public data: Record<string, any>,
-    public pagination: { limit: number; totalPages: number; total: number },
+    public data: any[] | Record<string, any>,
+    public pagination: {
+      page: number;
+      limit: number;
+      totalPages: number;
+      total: number;
+    },
   ) {}
 
   send(res: Response) {

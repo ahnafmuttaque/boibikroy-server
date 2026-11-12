@@ -64,6 +64,90 @@ export const StudentRegisterSchema = z.object({
     .optional(),
 });
 
+export const GetStudentsQuerySchema = z.object({
+  search: z.string().trim().min(1).max(255).optional(),
+  college_id: z.coerce.number().int().positive("Invalid college ID").optional(),
+  edu_level_id: z.coerce
+    .number()
+    .int()
+    .positive("Invalid education level ID")
+    .optional(),
+  status: z.enum(["active", "inactive", "suspended"]).optional(),
+  upazila_id: z.coerce.number().int().positive("Invalid upazila ID").optional(),
+  district_id: z.coerce
+    .number()
+    .int()
+    .positive("Invalid district ID")
+    .optional(),
+  limit: z.coerce
+    .number()
+    .int()
+    .positive("Limit must be a positive integer")
+    .max(100, "Limit cannot exceed 100")
+    .optional(),
+  page: z.coerce
+    .number()
+    .int()
+    .positive("Page must be a positive integer")
+    .optional(),
+});
+
+export const StudentPatchSchema = z
+  .object({
+    full_name: z
+      .string()
+      .trim()
+      .min(2, "Full name must be at least 2 characters")
+      .max(255, "Full name must be at most 255 characters")
+      .optional(),
+    contact_no: z
+      .string()
+      .trim()
+      .regex(
+        BD_PHONE_REGEX,
+        "Invalid Bangladeshi phone number (e.g. +8801XXXXXXXXX)",
+      )
+      .optional(),
+    college_id: z.number().int().positive("Invalid college ID").optional(),
+    edu_level_id: z
+      .number()
+      .int()
+      .positive("Invalid education level ID")
+      .optional(),
+    status: z.enum(["active", "inactive"]).optional(),
+    upazila_id: z.number().int().positive("Invalid upazila ID").optional(),
+    address: z
+      .string()
+      .trim()
+      .max(500, "Address must be at most 500 characters")
+      .optional(),
+  })
+  .refine(
+    (data) =>
+      data.full_name !== undefined ||
+      data.contact_no !== undefined ||
+      data.college_id !== undefined ||
+      data.edu_level_id !== undefined ||
+      data.status !== undefined ||
+      data.upazila_id !== undefined ||
+      data.address !== undefined,
+    {
+      message: "At least one field must be provided to update",
+    },
+  );
+
+export const StudentSuspendSchema = z.object({
+  suspend_reason: z
+    .string()
+    .trim()
+    .min(3, "Suspend reason must be at least 3 characters")
+    .max(500, "Suspend reason must be at most 500 characters")
+    .optional(),
+});
+
 export type StudentLogin = z.infer<typeof StudentLoginSchema>;
 export type StudentRegister = z.infer<typeof StudentRegisterSchema>;
 export type StudentUpdatePassword = z.infer<typeof StudentUpdatePasswordSchema>;
+export type GetStudentsQuery = z.infer<typeof GetStudentsQuerySchema>;
+export type StudentPatch = z.infer<typeof StudentPatchSchema>;
+export type StudentSuspend = z.infer<typeof StudentSuspendSchema>;

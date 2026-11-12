@@ -9,12 +9,22 @@ import {
   getStudentSelf,
   patchStudentSelf,
 } from "./student.controller.js";
+import {
+  validateBodyWithSchema,
+  validateQueryWithSchema,
+} from "@middlewares/validateSchema.middleware.js";
+import { GetStudentsQuerySchema } from "@validations/student.validation.js";
 
 const router = Router();
 
 router.use(validateJWt);
 
-router.get("/", validateRole("admin", "moderator"), getStudents);
+router.get(
+  "/",
+  validateRole("admin", "moderator"),
+  validateQueryWithSchema(GetStudentsQuerySchema),
+  getStudents,
+);
 
 router.get("/:id", validateRole("admin", "moderator"), getStudentById);
 
