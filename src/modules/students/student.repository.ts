@@ -182,3 +182,32 @@ export async function getDBStudentById(studentId: number) {
   const result = db.query<Query>(query, [studentId]);
   return result;
 }
+
+export async function deleteDBStudentById(studentId: number) {
+  const query = `
+      DELETE FROM students
+        WHERE id = $1;
+    `;
+  return db.query(query, [studentId]);
+}
+
+export async function getDBStatusStudent(studentId: number) {
+  const query = `
+    SELECT status FROM students
+      WHERE id = $1;
+    `;
+  return db.query<Pick<Student, "status">>(query, [studentId]);
+}
+
+export async function suspendDBStudentById(
+  studentId: number,
+  adminId: number,
+  reason?: string,
+) {
+  const query = `
+    UPDATE students
+      SET status = 'suspended', suspended_by = $1, suspended_at = CURRENT_TIMESTAMP, suspend_reason = $3
+      WHERE id = $2;
+    `;
+  return db.query(query, [adminId, studentId, reason ?? null]);
+}

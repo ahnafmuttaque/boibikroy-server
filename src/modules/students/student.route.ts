@@ -2,7 +2,7 @@ import { validateJWt } from "@middlewares/auth.middleware.js";
 import { validateRole } from "@middlewares/validateRole.middleware.js";
 import { Router } from "express";
 import {
-  postDeleteStudents,
+  deleteStudentById,
   getStudents,
   getStudentById,
   postSuspendStudent,
@@ -13,7 +13,10 @@ import {
   validateBodyWithSchema,
   validateQueryWithSchema,
 } from "@middlewares/validateSchema.middleware.js";
-import { GetStudentsQuerySchema } from "@validations/student.validation.js";
+import {
+  GetStudentsQuerySchema,
+  StudentSuspendSchema,
+} from "@validations/student.validation.js";
 
 const router = Router();
 
@@ -31,11 +34,12 @@ router.patch("/me", validateRole("student"), patchStudentSelf);
 
 router.get("/:id", validateRole("admin", "moderator"), getStudentById);
 
-router.delete("/:id", validateRole("admin"), postDeleteStudents);
+router.delete("/:id", validateRole("admin"), deleteStudentById);
 
 router.post(
   "/:id/suspend",
   validateRole("admin", "moderator"),
+  validateBodyWithSchema(StudentSuspendSchema),
   postSuspendStudent,
 );
 
