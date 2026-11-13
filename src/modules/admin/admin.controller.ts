@@ -15,7 +15,7 @@ import {
 import { ApiResponse } from "@utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
 import { asyncHandler } from "@utils/asyncHanlder.js";
-import { getPositiveNumberFromString } from "@validations/number.validation.js";
+import { getPositiveNumber } from "@validations/number.validation.js";
 
 export const postCreateAdmin = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -27,7 +27,7 @@ export const postCreateAdmin = asyncHandler(
 
 export const getAdminById = asyncHandler(async (req, res, next) => {
   const idStr = req.params.id;
-  const getAdminId = getPositiveNumberFromString(idStr);
+  const getAdminId = getPositiveNumber(idStr);
   const masterAdminId = req.user!.id;
   const result = await getAdminServiceWithId(getAdminId, masterAdminId);
   new ApiResponse(StatusCodes.OK, result).send(res);
@@ -42,7 +42,7 @@ export const patchAdmin = asyncHandler(async (req, res, next) => {
 
 export const deleteAdmin = asyncHandler(async (req, res, next) => {
   const masterAdminId = req.user!.id;
-  const deleteId = getPositiveNumberFromString(req.params.id);
+  const deleteId = getPositiveNumber(req.params.id);
   const masterAdminEmail = req.user!.email;
   await deleteAdminService(deleteId, masterAdminId, masterAdminEmail);
   new ApiResponse(StatusCodes.NO_CONTENT).send(res);
@@ -56,7 +56,7 @@ export const getAllAdmins = asyncHandler(async (req, res, next) => {
 
 export const postSuspendAdmin = asyncHandler(async (req, res, next) => {
   const idStr = req.params.id;
-  const suspendId = getPositiveNumberFromString(idStr);
+  const suspendId = getPositiveNumber(idStr);
   const masterAdminId = req.user!.id;
   const suspendedAdmin = await suspendAdminService(suspendId, masterAdminId);
   new ApiResponse(StatusCodes.OK, suspendedAdmin).send(res);

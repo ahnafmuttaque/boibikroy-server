@@ -4,7 +4,7 @@ import z from "zod";
 
 const N = z.coerce.number().int().positive();
 
-export function getPositiveNumberFromString(str: any) {
+export function getPositiveNumber(str: any) {
   const result = N.safeParse(str);
   if (!result.success) {
     throw new AppError(

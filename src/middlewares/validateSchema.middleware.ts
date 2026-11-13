@@ -28,6 +28,12 @@ export const validateQueryWithSchema = (zodSchema: _ZodType) => {
         ),
       );
     }
+    Object.defineProperty(req, "query", {
+      value: result.data,
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
     next();
   };
 };

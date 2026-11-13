@@ -26,18 +26,17 @@ router.get(
   getStudents,
 );
 
+router.get("/me", validateRole("student"), getStudentSelf);
+router.patch("/me", validateRole("student"), patchStudentSelf);
+
 router.get("/:id", validateRole("admin", "moderator"), getStudentById);
+
+router.delete("/:id", validateRole("admin"), postDeleteStudents);
 
 router.post(
   "/:id/suspend",
   validateRole("admin", "moderator"),
   postSuspendStudent,
 );
-
-router.get("/me", validateRole("student"), getStudentSelf);
-
-router.patch("/me", validateRole("student"), patchStudentSelf);
-
-router.delete("/:id", validateRole("admin"), postDeleteStudents);
 
 export default router;

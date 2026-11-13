@@ -2,8 +2,12 @@ import type { GetStudentsQuery } from "@validations/student.validation.js";
 import type { Request, Response } from "express";
 import { ApiResponse, PaginatedResponse } from "@utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
-import { getStudentsService } from "./student.service.js";
+import {
+  getStudentByIdService,
+  getStudentsService,
+} from "./student.service.js";
 import { asyncHandler } from "@utils/asyncHanlder.js";
+import { getPositiveNumber } from "@validations/number.validation.js";
 
 export async function postDeleteStudents(req: Request, res: Response) {}
 
@@ -13,7 +17,14 @@ export const getStudents = asyncHandler(async (req: Request, res: Response) => {
   new PaginatedResponse(StatusCodes.OK, students, pagination).send(res);
 });
 
-export async function getStudentById(req: Request, res: Response) {}
+export const getStudentById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const idStr = req.params.id;
+    const id = getPositiveNumber(idStr);
+    const student = await getStudentByIdService(id);
+    new ApiResponse(StatusCodes.OK, student).send(res);
+  },
+);
 
 export async function postSuspendStudent(req: Request, res: Response) {}
 
