@@ -1,6 +1,9 @@
 import db from "@config/db.config.js";
 import type { Student } from "@typedefs/student.type.js";
-import type { GetStudentsQuery } from "@validations/student.validation.js";
+import type {
+  GetStudentsQuery,
+  StudentPatch,
+} from "@validations/student.validation.js";
 
 export async function getDBStudentWithFilters(filters: GetStudentsQuery) {
   const {
@@ -210,4 +213,116 @@ export async function suspendDBStudentById(
       WHERE id = $2;
     `;
   return db.query(query, [adminId, studentId, reason ?? null]);
+}
+
+export async function patchDBStudentById(
+  studentId: number,
+  patchBody: StudentPatch,
+) {
+  const fields: Array<string> = [];
+  const values: Array<any> = [];
+  const {
+    contact_no,
+    full_name,
+    college_id,
+    edu_level_id,
+    upazila_id,
+    address,
+    status,
+  } = patchBody;
+
+  if (address !== undefined) {
+    values.push(address);
+    fields.push(`address=$${values.length}`);
+  }
+
+  if (contact_no) {
+    values.push(contact_no);
+    fields.push(`contact_no=$${values.length}`);
+  }
+
+  if (full_name) {
+    values.push(full_name);
+    fields.push(`full_name=$${values.length}`);
+  }
+
+  if (status) {
+    values.push(status);
+    fields.push(`status=$${values.length}`);
+  }
+
+  if (edu_level_id) {
+    values.push(edu_level_id);
+    fields.push(`edu_level_id=$${values.length}`);
+  }
+
+  if (upazila_id) {
+    values.push(upazila_id);
+    fields.push(`upazila_id=$${values.length}`);
+  }
+
+  if (college_id) {
+    values.push(college_id);
+    fields.push(`college_id=$${values.length}`);
+  }
+
+  values.push(studentId);
+  fields.push(`updated_at= CURRENT_TIMESTAMP`);
+
+  const query = `
+      UPDATE students SET ${fields.join(" , ")}
+        WHERE id=$${values.length};
+  `;
+
+  return db.query(query, values);
+}
+
+export async function getDBShortStudentByContactNo(contact_no: string) {
+  const query = `
+    SELECT id, contact_no FROM students
+      WHERE contact_no = $1;
+    `;
+  return db.query<Pick<Student, "contact_no" | "id">>(query, [contact_no]);
+}
+
+export async function isUpazilaEduLevelAndCollegeExists(
+  upazila_id?: number,
+  edu_level_id?: number,
+  college_id?: number,
+) {
+  const values: Array<any> = [];
+  const fields: Array<any> = [];
+
+  const getQueryForFields = (
+    tableName: string,
+    as: string,
+    fieldValue: number | undefined,
+  ) => {
+    const start = "EXISTS(";
+    const end = `) AS "${as}"`;
+    if (fieldValue !== undefined) {
+      values.push(fieldValue);
+      fields.push(
+        start + `SELECT 1 FROM ${tableName} WHERE id = $${values.length}` + end,
+      );
+      return;
+    }
+    values.push(1);
+    fields.push(start + `SELECT $${values.length}` + end);
+  };
+
+  getQueryForFields("upazilas", "upazilaExists", upazila_id);
+  getQueryForFields("education_levels", "eduLevelExists", edu_level_id);
+  getQueryForFields("colleges", "collegeExists", college_id);
+
+  type Query = {
+    upazilaExists: boolean;
+    eduLevelExists: boolean;
+    collegeExists: boolean;
+  };
+  const query = `
+        SELECT
+          ${fields.join(" ,\n")};
+    `;
+  return db.query<Query>(query, values);
 }

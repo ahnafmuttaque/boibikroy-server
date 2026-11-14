@@ -1,5 +1,6 @@
 import type {
   GetStudentsQuery,
+  StudentPatch,
   StudentSuspend,
 } from "@validations/student.validation.js";
 import type { Request, Response } from "express";
@@ -10,23 +11,36 @@ import {
   getStudentByIdService,
   getStudentSelfService,
   getStudentsService,
+  studentPatchService,
   suspendStudentById,
 } from "./student.service.js";
 import { asyncHandler } from "@utils/asyncHanlder.js";
 import { getPositiveNumber } from "@validations/number.validation.js";
-
-export async function deleteStudentById(req: Request, res: Response) {
-  const idStr = req.params.id;
-  const studentId = getPositiveNumber(idStr);
-  await deleteStudentByIdService(studentId);
-  new ApiResponse(StatusCodes.OK, { message: "Student deleted successfully" });
-}
 
 export const getStudents = asyncHandler(async (req: Request, res: Response) => {
   const filters = req.query as any as GetStudentsQuery;
   const { students, ...pagination } = await getStudentsService(filters);
   new PaginatedResponse(StatusCodes.OK, students, pagination).send(res);
 });
+
+export const getStudentSelf = asyncHandler(
+  async (req: Request, res: Response) => {
+    const studentId = req.user!.id;
+    const student = await getStudentSelfService(studentId);
+    new ApiResponse(StatusCodes.OK, student).send(res);
+  },
+);
+
+export const patchStudentSelf = asyncHandler(
+  async (req: Request, res: Response) => {
+    const patchBody: StudentPatch = req.body;
+    const studentId = req.user!.id;
+    await studentPatchService(studentId, patchBody);
+    new ApiResponse(StatusCodes.OK, {
+      message: "student patched successfully",
+    }).send(res);
+  },
+);
 
 export const getStudentById = asyncHandler(
   async (req: Request, res: Response) => {
@@ -37,21 +51,26 @@ export const getStudentById = asyncHandler(
   },
 );
 
-export async function getStudentSelf(req: Request, res: Response) {
-  const studentId = req.user!.id;
-  const student = await getStudentSelfService(studentId);
-  new ApiResponse(StatusCodes.OK, student).send(res);
-}
+export const deleteStudentById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const idStr = req.params.id;
+    const studentId = getPositiveNumber(idStr);
+    await deleteStudentByIdService(studentId);
+    new ApiResponse(StatusCodes.OK, {
+      message: "Student deleted successfully",
+    }).send(res);
+  },
+);
 
-export async function postSuspendStudent(req: Request, res: Response) {
-  const idStr = req.params.id;
-  const studentId = getPositiveNumber(idStr);
-  const adminId = req.user!.id;
-  const suspendBody: StudentSuspend = req.body;
-  await suspendStudentById(studentId, adminId, suspendBody.suspend_reason);
-  new ApiResponse(StatusCodes.OK, {
-    message: "Student suspension successful",
-  }).send(res);
-}
-
-export async function patchStudentSelf(req: Request, res: Response) {}
+export const postSuspendStudent = asyncHandler(
+  async (req: Request, res: Response) => {
+    const idStr = req.params.id;
+    const studentId = getPositiveNumber(idStr);
+    const adminId = req.user!.id;
+    const suspendBody: StudentSuspend = req.body;
+    await suspendStudentById(studentId, adminId, suspendBody?.suspend_reason);
+    new ApiResponse(StatusCodes.OK, {
+      message: "Student suspension successful",
+    }).send(res);
+  },
+);

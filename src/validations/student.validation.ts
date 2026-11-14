@@ -120,6 +120,7 @@ export const StudentPatchSchema = z
       .string()
       .trim()
       .max(500, "Address must be at most 500 characters")
+      .nullable()
       .optional(),
   })
   .refine(
@@ -136,14 +137,16 @@ export const StudentPatchSchema = z
     },
   );
 
-export const StudentSuspendSchema = z.object({
-  suspend_reason: z
-    .string()
-    .trim()
-    .min(3, "Suspend reason must be at least 3 characters")
-    .max(500, "Suspend reason must be at most 500 characters")
-    .optional(),
-});
+export const StudentSuspendSchema = z
+  .object({
+    suspend_reason: z
+      .string()
+      .trim()
+      .min(3, "Suspend reason must be at least 3 characters")
+      .max(500, "Suspend reason must be at most 500 characters")
+      .optional(),
+  })
+  .optional();
 
 export type StudentLogin = z.infer<typeof StudentLoginSchema>;
 export type StudentRegister = z.infer<typeof StudentRegisterSchema>;

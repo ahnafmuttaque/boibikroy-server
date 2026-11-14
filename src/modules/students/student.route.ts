@@ -16,6 +16,7 @@ import {
 import {
   GetStudentsQuerySchema,
   StudentSuspendSchema,
+  StudentPatchSchema,
 } from "@validations/student.validation.js";
 
 const router = Router();
@@ -30,7 +31,12 @@ router.get(
 );
 
 router.get("/me", validateRole("student"), getStudentSelf);
-router.patch("/me", validateRole("student"), patchStudentSelf);
+router.patch(
+  "/me",
+  validateRole("student"),
+  validateBodyWithSchema(StudentPatchSchema),
+  patchStudentSelf,
+);
 
 router.get("/:id", validateRole("admin", "moderator"), getStudentById);
 
