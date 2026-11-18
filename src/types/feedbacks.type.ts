@@ -16,5 +16,3 @@ export interface Feedback {
   status: FeedbackStatus;
   created_at: string;
 }
-
-

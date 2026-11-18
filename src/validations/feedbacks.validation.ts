@@ -1,8 +1,5 @@
 import * as z from "zod";
 
-<<<<<<< HEAD
-export const PostFeedbackSchema = z.object({
-=======
 export const BD_PHONE_REGEX = /^\+880[0-9]{10}$/;
 export const EMAIL_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
@@ -12,20 +9,7 @@ export const FeedbackStatusEnum = z.enum([
   "mark-as-improvement",
 ]);
 
-export const UpdateFeedbackStatusEnum = z.enum(
-  ["reviewed", "mark-as-improvement"],
-  {
-    message:
-      "Invalid feedback status. Must be 'reviewed' or 'mark-as-improvement'",
-  },
-);
-
-/**
- * Validation schema for creating a new feedback (POST /feedbacks)
- * Corresponds to sqls/feedback.create.sql
- */
 export const CreateFeedbackSchema = z.object({
->>>>>>> 193d6a1 (add feedback validation schema for feedback apis)
   subject: z
     .string()
     .trim()
@@ -55,9 +39,6 @@ export const CreateFeedbackSchema = z.object({
     .max(5000, "Description must be at most 5000 characters"),
 });
 
-<<<<<<< HEAD
-export type PostFeedback = z.infer<typeof PostFeedbackSchema>;
-=======
 /**
  * Validation schema for querying feedbacks (GET /feedbacks?subject={}&status={}&limit={}&page={})
  */
@@ -84,36 +65,17 @@ export const GetFeedbacksQuerySchema = z.object({
     .optional(),
 });
 
-/**
- * Validation schema for feedback ID path parameter (GET /feedbacks/:id)
- */
-export const FeedbackIdParamSchema = z.object({
-  id: z.coerce.number().int().positive("Invalid feedback ID format"),
-});
-
-/**
- * Validation schema for updating feedback status
- * Handles request body { status: "reviewed" | "mark-as-improvement" }
- */
 export const UpdateFeedbackStatusSchema = z.object({
-  status: UpdateFeedbackStatusEnum,
+  status: z.enum(
+    ["reviewed", "mark-as-improvement"],
+    {
+      message:
+        "Invalid feedback status. Must be 'reviewed' or 'mark-as-improvement'",
+    }),
 });
 
-/**
- * Validation schema for route parameters in POST /feedbacks/:id/:status
- */
-export const UpdateFeedbackRouteParamsSchema = z.object({
-  id: z.coerce.number().int().positive("Invalid feedback ID format"),
-  status: UpdateFeedbackStatusEnum,
-});
 
 // Inferred TypeScript types
 export type CreateFeedback = z.infer<typeof CreateFeedbackSchema>;
-export type PostFeedback = CreateFeedback;
 export type GetFeedbacksQuery = z.infer<typeof GetFeedbacksQuerySchema>;
-export type FeedbackIdParam = z.infer<typeof FeedbackIdParamSchema>;
 export type UpdateFeedbackStatus = z.infer<typeof UpdateFeedbackStatusSchema>;
-export type UpdateFeedbackRouteParams = z.infer<
-  typeof UpdateFeedbackRouteParamsSchema
->;
->>>>>>> 193d6a1 (add feedback validation schema for feedback apis)
