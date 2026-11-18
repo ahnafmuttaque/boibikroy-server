@@ -18,8 +18,7 @@ export const addFeedbackService = async (createFeedback: CreateFeedback) => {
 };
 
 export const getAllFeedbacksService = async (filters: GetFeedbacksQuery) => {
-  const result = await getDBFeedbacks(filters);
-  return result.rows;
+  return await getDBFeedbacks(filters);
 };
 
 export const getFeedByIdService = async (feedbackId: number) => {

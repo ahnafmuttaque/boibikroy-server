@@ -10,14 +10,14 @@ import {
   getFeedByIdService,
   updateFeedbackStatusService,
 } from "./feedbacks.service.js";
-import { ApiResponse } from "@utils/ApiResponse.js";
+import { ApiResponse, PaginatedResponse } from "@utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
 import { getPositiveNumberFromString } from "@validations/number.validation.js";
 
 export const getAllFeedbacks = asyncHandler(async (req, res) => {
   const filters: GetFeedbacksQuery = req.query;
-  const feedbacks = await getAllFeedbacksService(filters);
-  new ApiResponse(StatusCodes.OK, feedbacks).send(res);
+  const { feedbacks, pagination } = await getAllFeedbacksService(filters);
+  new PaginatedResponse(StatusCodes.OK, feedbacks, pagination).send(res);
 });
 
 export const getSingleFeedback = asyncHandler(async (req, res) => {

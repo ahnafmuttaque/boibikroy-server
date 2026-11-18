@@ -50,13 +50,30 @@ export async function getDBFeedbacks(filters: GetFeedbacksQuery) {
   const whereClause = values.length > 0 ? `WHERE ${fields.join(" AND ")}` : "";
 
   const query = `
-    SELECT * FROM feedbacks
+    SELECT
+      *,
+      COUNT(*) OVER() AS total_count
+    FROM feedbacks
       ${whereClause}
       ORDER BY created_at DESC
       LIMIT ${pageSize} OFFSET ${offset};
   `;
 
-  return db.query(query, values);
+  type FeedbackQuery = Feedback & { total_count: number };
+  const result = await db.query<FeedbackQuery>(query, values);
+  const total =
+    result.rows.length > 0 ? Number(result.rows[0]?.total_count) : 0;
+  const totalPages = Math.ceil(total / pageSize);
+  const feedbacks = result.rows.map(({ total_count, ...feedback }) => feedback);
+  return {
+    feedbacks,
+    pagination: {
+      limit: pageSize,
+      page: pageNo,
+      total,
+      totalPages,
+    },
+  };
 }
 
 export async function getDBFeedbackById(feedbackId: number) {
