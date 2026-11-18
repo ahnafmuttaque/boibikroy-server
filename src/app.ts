@@ -15,6 +15,7 @@ const ApiVersionOne = "/api/v1";
 const authRoute = `${ApiVersionOne}/auth`;
 const adminRoute = `${ApiVersionOne}/admins`;
 const studentRoute = `${ApiVersionOne}/students`;
+const feedbackRoute = `${ApiVersionOne}/feedbacks`;
 
 app.get("/", async (req, res) => {
   res.json({
@@ -31,7 +32,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use(authRoute, authRouter);
-app.use(ApiVersionOne, feedbackRouter);
+app.use(feedbackRoute, feedbackRouter);
 app.use(adminRoute, adminRouter);
 app.use(studentRoute, studentRouter);
 
