@@ -3,7 +3,7 @@ import type {
   GetFeedbacksQuery,
   UpdateFeedbackStatus,
 } from "@validations/feedbacks.validation.js";
-import { asyncHandler } from "@utils/asyncHanlder.js";
+import { asyncHandler } from "@utils/asyncHandler.js";
 import {
   addFeedbackService,
   getAllFeedbacksService,

@@ -14,3 +14,5 @@ export function getPositiveNumber(str: any) {
   }
   return result.data;
 }
+
+export const getPositiveNumberFromString = getPositiveNumber;

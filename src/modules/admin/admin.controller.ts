@@ -14,7 +14,7 @@ import {
 } from "@modules/admin/admin.service.js";
 import { ApiResponse } from "@utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
-import { asyncHandler } from "@utils/asyncHanlder.js";
+import { asyncHandler } from "@utils/asyncHandler.js";
 import { getPositiveNumber } from "@validations/number.validation.js";
 
 export const postCreateAdmin = asyncHandler(

@@ -10,7 +10,7 @@ import {
   studentRegisterService,
   studentUpdatePasswordService,
 } from "@modules/auth/auth.service.js";
-import { asyncHandler } from "@utils/asyncHanlder.js";
+import { asyncHandler } from "@utils/asyncHandler.js";
 import { ApiResponse } from "@utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
 import { createJWT } from "@utils/createJWT.js";

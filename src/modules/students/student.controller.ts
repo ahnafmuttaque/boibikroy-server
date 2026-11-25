@@ -14,7 +14,7 @@ import {
   studentPatchService,
   suspendStudentById,
 } from "./student.service.js";
-import { asyncHandler } from "@utils/asyncHanlder.js";
+import { asyncHandler } from "@utils/asyncHandler.js";
 import { getPositiveNumber } from "@validations/number.validation.js";
 
 export const getStudents = asyncHandler(async (req: Request, res: Response) => {
