@@ -31,6 +31,7 @@ export const getFeedByIdService = async (feedbackId: number) => {
 
 export const updateFeedbackStatusService = async (
   feedbackId: number,
+  adminId: number,
   statusBody: UpdateFeedbackStatus,
 ) => {
   const getFdRes = await getDBFeedbackById(feedbackId);
@@ -40,13 +41,21 @@ export const updateFeedbackStatusService = async (
   const feedback = getFdRes.rows[0]!;
   if (feedback.status !== "pending") {
     throw new AppError(
-      StatusCodes.BAD_REQUEST,
+      StatusCodes.CONFLICT,
       "feedback status is already updated",
     );
   }
-  const updateRes = await updateDBFeedbackStatus(feedbackId, statusBody);
+  const updateRes = await updateDBFeedbackStatus(
+    feedbackId,
+    adminId,
+    statusBody,
+  );
+  // another admin updated it between the check & the update
   if (!updateRes.rows.length) {
-    throw new AppError(StatusCodes.NOT_FOUND, "feedback not found");
+    throw new AppError(
+      StatusCodes.CONFLICT,
+      "feedback status is already updated",
+    );
   }
   return updateRes.rows[0]!;
 };

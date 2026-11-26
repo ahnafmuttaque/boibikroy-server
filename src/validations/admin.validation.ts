@@ -51,6 +51,17 @@ export const GetAdminQuerySchema = z.object({
     z.string().trim().regex(EMAIL_REGEX, "Invalid email address").max(254),
   ),
   full_name: z.optional(z.string().trim().min(2).max(100)),
+  limit: z.coerce
+    .number()
+    .int()
+    .positive("Limit must be a positive integer")
+    .max(100, "Limit cannot exceed 100")
+    .optional(),
+  page: z.coerce
+    .number()
+    .int()
+    .positive("Page must be a positive integer")
+    .optional(),
 });
 
 export type AdminPatch = z.infer<typeof AdminPatchSchema>;

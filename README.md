@@ -82,17 +82,18 @@ The server validates these on startup and exits with a clear message if any are 
 
 Run the table scripts in `sqls/` in dependency order:
 
-1. `feedback.create.sql` (also creates the `email_address` and `bd_phone` domains used by other tables)
+1. `domains.create.sql` (the `email_address` and `bd_phone` domains used by other tables)
 2. `divisions.create.sql`
 3. `districts.create.sql`
 4. `upazilas.create.sql`
 5. `colleges.create.sql`
 6. `education_levels.create.sql`
 7. `admins.create.sql`
-8. `students.create.sql`
-9. `saved_campuses.create.sql`
-10. `books.create.sql`
-11. `reports.create.sql`
+8. `feedback.create.sql`
+9. `students.create.sql`
+10. `saved_campuses.create.sql`
+11. `books.create.sql`
+12. `reports.create.sql`
 
 The schema diagram lives in `erd.dbml`.
 
@@ -548,31 +549,39 @@ Admin management is limited to the master admin (`admin` role). The master admin
 
 `GET /admins` · **Admin**
 
-Returns every moderator account. Accounts with the `admin` role are left out. This list is **not paginated**.
+Returns moderator accounts. Accounts with the `admin` role are left out. Paginated, newest first.
 
 **Query**
 
-| Param       | Type   | Description                                                  |
-| ----------- | ------ | ------------------------------------------------------------ |
-| `status`    | string | `active`, `inactive` or `suspended`.                         |
-| `email`     | string | Valid email; case-insensitive partial match.                 |
-| `full_name` | string | 2 to 100 characters; case-insensitive partial match.         |
+| Param       | Type    | Description                                                  |
+| ----------- | ------- | ------------------------------------------------------------ |
+| `status`    | string  | `active`, `inactive` or `suspended`.                         |
+| `email`     | string  | Valid email; case-insensitive partial match.                 |
+| `full_name` | string  | 2 to 100 characters; case-insensitive partial match.         |
+| `limit`     | integer | See [Pagination](#pagination).                               |
+| `page`      | integer | See [Pagination](#pagination).                               |
 
 **Response** `200 OK`
 
 ```json
-[
-  {
-    "id": 7,
-    "full_name": "Karim Hossain",
-    "email": "karim@example.com",
-    "contact_no": "+8801812345678",
-    "role": "moderator",
-    "status": "active",
-    "created_at": "2026-11-03T03:01:27.060Z",
-    "updated_at": "2026-11-10T15:43:32.323Z"
-  }
-]
+{
+  "data": [
+    {
+      "id": 7,
+      "full_name": "Karim Hossain",
+      "email": "karim@example.com",
+      "contact_no": "+8801812345678",
+      "role": "moderator",
+      "status": "active",
+      "created_at": "2026-11-03T03:01:27.060Z",
+      "updated_at": "2026-11-10T15:43:32.323Z"
+    }
+  ],
+  "limit": 10,
+  "page": 1,
+  "total": 1,
+  "totalPages": 1
+}
 ```
 
 ---
@@ -933,13 +942,7 @@ Suspended students can't sign in, and their books are hidden from public listing
 
 Permanently deletes the student together with their saved campuses, books and reports.
 
-**Response** `200 OK`
-
-```json
-{
-  "message": "Student deleted successfully"
-}
-```
+**Response** `204 No Content`
 
 **Errors**
 
@@ -1081,11 +1084,7 @@ If any of the student's books use this campus, pass `altCampusId`. Those books a
 | ------------- | ------- | --------------------------------- | -------------------------------------- |
 | `altCampusId` | integer | When books use this campus        | Another of the student's saved campuses |
 
-**Response** `200 OK`
-
-```json
-"campus deleted successfully"
-```
+**Response** `204 No Content`
 
 **Errors**
 
@@ -1708,7 +1707,9 @@ Anyone can send feedback about the platform; admins and moderators review it.
   "email": "nusrat@example.com",
   "description": "Searching books by title takes several seconds.",
   "status": "pending",
-  "created_at": "2026-11-26T15:57:55.425Z"
+  "created_at": "2026-11-26T15:57:55.425Z",
+  "reviewed_by": null,
+  "reviewed_at": null
 }
 ```
 
@@ -1741,8 +1742,11 @@ Paginated, newest first.
       "contact_no": "+8801912345678",
       "email": "nusrat@example.com",
       "description": "Searching books by title takes several seconds.",
-      "status": "pending",
-      "created_at": "2026-11-26T15:57:55.425Z"
+      "status": "reviewed",
+      "created_at": "2026-11-26T15:57:55.425Z",
+      "reviewed_by": 7,
+      "reviewed_at": "2026-11-27T09:12:40.118Z",
+      "reviewer_name": "Karim Hossain"
     }
   ],
   "limit": 10,
@@ -1772,7 +1776,7 @@ Paginated, newest first.
 
 `PATCH /feedbacks/:id` · **Admin, Moderator**
 
-Only `pending` feedback can be updated.
+Only `pending` feedback can be updated. Records the caller as `reviewed_by` and the current time as `reviewed_at`.
 
 **Body**
 
@@ -1786,12 +1790,12 @@ Only `pending` feedback can be updated.
 }
 ```
 
-**Response** `200 OK`: the updated feedback, in the same shape as in [List Feedbacks](#list-feedbacks).
+**Response** `200 OK`: the updated feedback, in the same shape as the [Send Feedback](#send-feedback) response, with `status`, `reviewed_by` and `reviewed_at` filled in.
 
 **Errors**
 
 | Status | `error`                                                                  |
 | ------ | ------------------------------------------------------------------------ |
 | `400`  | `Invalid feedback status. Must be 'reviewed' or 'mark-as-improvement'`   |
-| `400`  | `feedback status is already updated`                                     |
+| `409`  | `feedback status is already updated`                                     |
 | `404`  | `feedback not found`                                                     |

@@ -74,7 +74,7 @@ export async function deleteDBAdminById(id: number) {
 }
 
 export async function getAllDBAdmins(filters: GetAdminQuery) {
-  const { email, status, full_name } = filters;
+  const { email, status, full_name, limit, page } = filters;
   const values: Array<string> = [];
   const conditions: Array<string> = [];
   if (email) {
@@ -92,8 +92,33 @@ export async function getAllDBAdmins(filters: GetAdminQuery) {
   }
 
   const whereClause = `where role <> 'admin' ${conditions.length === 0 ? "" : " AND " + conditions.join(" AND ")}`;
-  const query = `SELECT id, full_name, email, contact_no, role, status, created_at , updated_at FROM admins ${whereClause}`;
-  return db.query<Admin>(query, values);
+
+  const pageSize = limit ?? 10;
+  const pageNumber = Math.max(1, page ?? 1);
+  const offset = (pageNumber - 1) * pageSize;
+
+  const query = `
+    SELECT id, full_name, email, contact_no, role, status, created_at , updated_at,
+      COUNT(*) OVER() AS total_count
+    FROM admins ${whereClause}
+    ORDER BY created_at DESC, id DESC LIMIT ${pageSize} OFFSET ${offset}
+    `;
+  type Query = Omit<Admin, "password_hash" | "suspended_by" | "suspended_at"> & {
+    total_count: number;
+  };
+
+  const result = await db.query<Query>(query, values);
+  const total =
+    result.rows.length > 0 ? Number(result.rows[0]?.total_count) : 0;
+  const admins = result.rows.map(({ total_count, ...admin }) => admin);
+  const totalPages = Math.ceil(total / pageSize);
+  return {
+    admins,
+    limit: pageSize,
+    page: pageNumber,
+    total,
+    totalPages,
+  };
 }
 
 export async function getDBAdminForSuspension(id: number) {

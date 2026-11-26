@@ -56,9 +56,7 @@ export const deleteStudentById = asyncHandler(
     const idStr = req.params.id;
     const studentId = getPositiveNumber(idStr);
     await deleteStudentByIdService(studentId);
-    new ApiResponse(StatusCodes.OK, {
-      message: "Student deleted successfully",
-    }).send(res);
+    new ApiResponse(StatusCodes.NO_CONTENT).send(res);
   },
 );
 

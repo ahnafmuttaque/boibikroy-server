@@ -14,5 +14,9 @@ export interface Feedback {
   email: string;
   description: string;
   status: FeedbackStatus;
+  reviewed_by: number | null;
+  reviewed_at: string | null;
   created_at: string;
 }
+
+export type FeedbackWithReviewer = Feedback & { reviewer_name: string | null };

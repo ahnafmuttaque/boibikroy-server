@@ -12,7 +12,7 @@ import {
   patchAdminService,
   suspendAdminService,
 } from "@modules/admin/admin.service.js";
-import { ApiResponse } from "@utils/ApiResponse.js";
+import { ApiResponse, PaginatedResponse } from "@utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
 import { asyncHandler } from "@utils/asyncHandler.js";
 import { getPositiveNumber } from "@validations/number.validation.js";
@@ -49,9 +49,9 @@ export const deleteAdmin = asyncHandler(async (req, res, next) => {
 });
 
 export const getAllAdmins = asyncHandler(async (req, res, next) => {
-  const queries: GetAdminQuery = req.query;
-  const admins = await getAllAdminsService(queries);
-  new ApiResponse(StatusCodes.OK, admins).send(res);
+  const queries = req.query as any as GetAdminQuery;
+  const { admins, ...pagination } = await getAllAdminsService(queries);
+  new PaginatedResponse(StatusCodes.OK, admins, pagination).send(res);
 });
 
 export const postSuspendAdmin = asyncHandler(async (req, res, next) => {

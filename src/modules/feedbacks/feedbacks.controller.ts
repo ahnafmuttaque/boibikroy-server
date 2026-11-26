@@ -37,8 +37,10 @@ export const patchUpdateFeedbackStatus = asyncHandler(async (req, res) => {
   const idStr = req.params.id as string;
   const feedbackId = getPositiveNumberFromString(idStr);
   const statusBody: UpdateFeedbackStatus = req.body;
+  const adminId = req.user!.id;
   const updatedFeedback = await updateFeedbackStatusService(
     feedbackId,
+    adminId,
     statusBody,
   );
   new ApiResponse(StatusCodes.OK, updatedFeedback).send(res);

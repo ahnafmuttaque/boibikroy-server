@@ -20,8 +20,7 @@ import { ReasonPhrases } from "http-status-codes/build/es/reason-phrases.js";
 
 export async function getAllAdminsService(filters: GetAdminQuery) {
   // fetching the admins with the filters but not the master admin
-  const queryResult = await getAllDBAdmins(filters);
-  return queryResult.rows;
+  return await getAllDBAdmins(filters);
 }
 
 export async function createAdminService(registerCredentials: AdminRegister) {

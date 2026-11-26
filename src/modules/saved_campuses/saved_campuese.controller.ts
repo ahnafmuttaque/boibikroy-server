@@ -40,7 +40,7 @@ export const deleteCampusById = asyncHandler(async (req, res) => {
   const campusId = getPositiveNumber(req.params.campus_id);
   const { altCampusId }: DeleteCampusQuery = req.query;
   await campusDeleteService(studentId, campusId, altCampusId);
-  new ApiResponse(StatusCodes.OK, "campus deleted successfully").send(res);
+  new ApiResponse(StatusCodes.NO_CONTENT).send(res);
 });
 
 export const patchCampusById = asyncHandler(async (req, res) => {
