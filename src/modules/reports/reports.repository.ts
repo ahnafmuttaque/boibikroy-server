@@ -1,6 +1,9 @@
 import db from "@config/db.config.js";
 import type { Report, ReportWithDetails } from "@typedefs/reports.type.js";
-import type { GetReportsQuery } from "@validations/reports.validation.js";
+import type {
+  GetMyReportsQuery,
+  GetReportsQuery,
+} from "@validations/reports.validation.js";
 
 export const existsDBBookById = async (bookId: number) => {
   const query = `
@@ -151,6 +154,76 @@ export async function getDBReportsWithFilters(filters: GetReportsQuery) {
       ORDER BY r.created_at DESC LIMIT ${pageSize} OFFSET ${offset}
     `;
   type Query = ReportWithDetails & {
+    total_count: number;
+  };
+
+  const result = await db.query<Query>(query, values);
+  const total =
+    result.rows.length > 0 ? Number(result.rows[0]?.total_count) : 0;
+  const reports = result.rows.map(({ total_count, ...report }) => report);
+  const totalPages = Math.ceil(total / pageSize);
+  return {
+    reports,
+    limit: pageSize,
+    page: pageNumber,
+    total,
+    totalPages,
+  };
+}
+
+export async function getDBReportsByReporter(
+  reporterId: number,
+  filters: GetMyReportsQuery,
+) {
+  const { type, status, limit, page } = filters;
+  // r for reports
+  // s for reported students
+  // b for books
+  const values: Array<any> = [reporterId];
+  const fields: Array<any> = [`r.reported_by=$${values.length}`];
+
+  if (type) {
+    values.push(type);
+    fields.push(`r.type=$${values.length}`);
+  }
+
+  if (status) {
+    values.push(status);
+    fields.push(`r.status=$${values.length}`);
+  }
+
+  const whereClause = `WHERE ${fields.join(" AND ")}`;
+
+  const pageSize = limit ?? 10;
+  const pageNumber = Math.max(1, page ?? 1);
+  const offset = (pageNumber - 1) * pageSize;
+
+  const query = `
+  SELECT
+    r.id, r.type, r.book_id, r.student_id, r.reason,
+    r.status, r.reviewed_at, r.created_at,
+    s.full_name AS reported_student_name,
+    b.title AS reported_book_title,
+    COUNT(*) OVER() AS total_count
+  FROM reports AS r
+      LEFT JOIN students AS s ON r.student_id = s.id
+      LEFT JOIN books AS b ON r.book_id = b.id
+      ${whereClause}
+      ORDER BY r.created_at DESC LIMIT ${pageSize} OFFSET ${offset}
+    `;
+  type Query = Pick<
+    ReportWithDetails,
+    | "id"
+    | "type"
+    | "book_id"
+    | "student_id"
+    | "reason"
+    | "status"
+    | "reviewed_at"
+    | "created_at"
+    | "reported_student_name"
+    | "reported_book_title"
+  > & {
     total_count: number;
   };
 

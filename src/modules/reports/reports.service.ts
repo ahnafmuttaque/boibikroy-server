@@ -1,5 +1,6 @@
 import type {
   CreateReport,
+  GetMyReportsQuery,
   GetReportsQuery,
 } from "@validations/reports.validation.js";
 import {
@@ -7,6 +8,7 @@ import {
   createDBStudentReport,
   existsDBBookById,
   existsDBStudentById,
+  getDBReportsByReporter,
   getDBReportsWithFilters,
 } from "./reports.repository.js";
 import { AppError } from "@utils/AppError.js";
@@ -14,6 +16,13 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 export async function getReportsService(filters: GetReportsQuery) {
   return await getDBReportsWithFilters(filters);
+}
+
+export async function getMyReportsService(
+  reporterId: number,
+  filters: GetMyReportsQuery,
+) {
+  return await getDBReportsByReporter(reporterId, filters);
 }
 
 export const createReportService = async (
@@ -44,7 +53,11 @@ export const createReportService = async (
     if (!existStudentRes.rows[0]!.student_exists) {
       throw new AppError(StatusCodes.NOT_FOUND, "Student not found");
     }
-    const createRes = await createDBStudentReport(reporterId, student_id, reason);
+    const createRes = await createDBStudentReport(
+      reporterId,
+      student_id,
+      reason,
+    );
     return createRes.rows[0]!;
   }
   throw new AppError(

@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { getReports, postReports } from "./reports.controller.js";
+import {
+  getMyReports,
+  getReports,
+  postReports,
+} from "./reports.controller.js";
 import { validateJWt } from "@middlewares/auth.middleware.js";
 import { validateRole } from "@middlewares/validateRole.middleware.js";
 import {
@@ -8,6 +12,7 @@ import {
 } from "@middlewares/validateSchema.middleware.js";
 import {
   CreateReportSchema,
+  GetMyReportsQuerySchema,
   GetReportsQuerySchema,
 } from "@validations/reports.validation.js";
 
@@ -20,6 +25,13 @@ router.get(
   validateRole("admin", "moderator"),
   validateQueryWithSchema(GetReportsQuerySchema),
   getReports,
+);
+
+router.get(
+  "/me",
+  validateRole("student"),
+  validateQueryWithSchema(GetMyReportsQuerySchema),
+  getMyReports,
 );
 
 router.post(

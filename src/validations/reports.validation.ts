@@ -99,6 +99,22 @@ export const GetReportsQuerySchema = z.object({
     .optional(),
 });
 
+export const GetMyReportsQuerySchema = z.object({
+  type: z.enum(["book", "student"]).optional(),
+  status: z.enum(["pending", "reviewed", "action_taken"]).optional(),
+  limit: z.coerce
+    .number()
+    .int()
+    .positive("Limit must be a positive integer")
+    .max(100, "Limit cannot exceed 100")
+    .optional(),
+  page: z.coerce
+    .number()
+    .int()
+    .positive("Page must be a positive integer")
+    .optional(),
+});
+
 export const UpdateReportStatusSchema = z
   .object({
     status: z.enum(["reviewed", "action_taken", "confirmed"], {
@@ -116,4 +132,5 @@ export const ReportStatusParamSchema = z.enum(
 
 export type CreateReport = z.infer<typeof CreateReportSchema>;
 export type GetReportsQuery = z.infer<typeof GetReportsQuerySchema>;
+export type GetMyReportsQuery = z.infer<typeof GetMyReportsQuerySchema>;
 export type UpdateReportStatus = z.infer<typeof UpdateReportStatusSchema>;
