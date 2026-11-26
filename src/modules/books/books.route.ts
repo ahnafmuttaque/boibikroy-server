@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { getAdminBooks, getBooks, postCreateBook } from "./books.controller.js";
+import {
+  getAdminBooks,
+  getBooks,
+  getMyBooks,
+  postCreateBook,
+} from "./books.controller.js";
 import { validateJWt } from "@middlewares/auth.middleware.js";
 import { validateRole } from "@middlewares/validateRole.middleware.js";
 import {
@@ -9,6 +14,7 @@ import {
 import {
   CreateBookSchema,
   GetBooksQuerySchema,
+  GetMyBooksQuerySchema,
 } from "@validations/books.validation.js";
 
 const router = Router();
@@ -22,6 +28,14 @@ router.get(
   validateRole("admin", "moderator"),
   validateQueryWithSchema(GetBooksQuerySchema),
   getAdminBooks,
+);
+
+router.get(
+  "/me",
+  validateJWt,
+  validateRole("student"),
+  validateQueryWithSchema(GetMyBooksQuerySchema),
+  getMyBooks,
 );
 
 router.post(

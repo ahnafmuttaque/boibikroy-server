@@ -1,9 +1,11 @@
 import type {
   CreateBook,
   GetBooksQuery,
+  GetMyBooksQuery,
 } from "@validations/books.validation.js";
 import {
   existsDBEduLevelById,
+  getDBBooksByStudent,
   getDBBooksWithFilters,
   insertDBBook,
 } from "./books.repository.js";
@@ -22,6 +24,21 @@ export async function getAdminBooksService(filters: GetBooksQuery) {
   // admins see every book except drafts, including suspended students' books
   const visibleStatuses = BOOK_STATUSES.filter((status) => status !== "draft");
   return await getDBBooksWithFilters(filters, visibleStatuses, false);
+}
+
+export async function getMyBooksService(
+  studentId: number,
+  filters: GetMyBooksQuery,
+) {
+  const statusRes = await getDBStatusStudent(studentId);
+  if (!statusRes.rows.length) {
+    throw new AppError(StatusCodes.NOT_FOUND, "Student not found");
+  }
+  if (statusRes.rows[0]!.status === "suspended") {
+    throw new AppError(StatusCodes.FORBIDDEN, "Student is suspended");
+  }
+  // students see all of their own books, drafts & restricted included
+  return await getDBBooksByStudent(studentId, filters);
 }
 
 export const createBookService = async (

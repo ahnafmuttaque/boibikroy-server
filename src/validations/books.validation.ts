@@ -1,5 +1,9 @@
 import * as z from "zod";
-import { BOOK_CONDITIONS, BOOK_TYPES } from "@typedefs/books.type.js";
+import {
+  BOOK_CONDITIONS,
+  BOOK_STATUSES,
+  BOOK_TYPES,
+} from "@typedefs/books.type.js";
 
 const BD_PHONE_REGEX = /^\+880[0-9]{10}$/;
 
@@ -171,5 +175,33 @@ export const GetBooksQuerySchema = z
     },
   );
 
+export const GetMyBooksQuerySchema = z.object({
+  title: z.string().trim().min(1).max(200).optional(),
+  status: z
+    .enum(
+      BOOK_STATUSES,
+      "Status must be 'active', 'draft', 'sold_out', 'archived' or 'restricted'",
+    )
+    .optional(),
+  type: z
+    .enum(
+      BOOK_TYPES,
+      "Type must be 'class_book', 'easy_book' or 'suggestion_and_question_bank'",
+    )
+    .optional(),
+  limit: z.coerce
+    .number()
+    .int()
+    .positive("Limit must be a positive integer")
+    .max(100, "Limit cannot exceed 100")
+    .optional(),
+  page: z.coerce
+    .number()
+    .int()
+    .positive("Page must be a positive integer")
+    .optional(),
+});
+
 export type CreateBook = z.infer<typeof CreateBookSchema>;
+export type GetMyBooksQuery = z.infer<typeof GetMyBooksQuerySchema>;
 export type GetBooksQuery = z.infer<typeof GetBooksQuerySchema>;

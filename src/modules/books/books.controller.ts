@@ -1,6 +1,7 @@
 import type {
   CreateBook,
   GetBooksQuery,
+  GetMyBooksQuery,
 } from "@validations/books.validation.js";
 import type { Request, Response } from "express";
 import { ApiResponse, PaginatedResponse } from "@utils/ApiResponse.js";
@@ -10,6 +11,7 @@ import {
   createBookService,
   getAdminBooksService,
   getBooksService,
+  getMyBooksService,
 } from "./books.service.js";
 
 export const getBooks = asyncHandler(async (req: Request, res: Response) => {
@@ -25,6 +27,13 @@ export const getAdminBooks = asyncHandler(
     new PaginatedResponse(StatusCodes.OK, books, pagination).send(res);
   },
 );
+
+export const getMyBooks = asyncHandler(async (req: Request, res: Response) => {
+  const studentId = req.user!.id;
+  const filters = req.query as any as GetMyBooksQuery;
+  const { books, ...pagination } = await getMyBooksService(studentId, filters);
+  new PaginatedResponse(StatusCodes.OK, books, pagination).send(res);
+});
 
 export const postCreateBook = asyncHandler(
   async (req: Request, res: Response) => {

@@ -3,6 +3,7 @@ import type { Book, BookStatus } from "@typedefs/books.type.js";
 import type {
   CreateBook,
   GetBooksQuery,
+  GetMyBooksQuery,
 } from "@validations/books.validation.js";
 
 export const existsDBEduLevelById = async (eduLevelId: number) => {
@@ -67,6 +68,71 @@ export const insertDBBook = async (studentId: number, createBook: CreateBook) =>
     contact_no ?? null,
   ]);
 };
+
+export async function getDBBooksByStudent(
+  studentId: number,
+  filters: GetMyBooksQuery,
+) {
+  const { title, status, type, limit, page } = filters;
+  // b for books
+  // e for education_levels
+  const values: Array<any> = [studentId];
+  const fields: Array<any> = [`b.posted_by=$${values.length}`];
+
+  if (title) {
+    values.push(`%${title}%`);
+    fields.push(`b.title ILIKE $${values.length}`);
+  }
+
+  if (status) {
+    values.push(status);
+    fields.push(`b.status=$${values.length}`);
+  }
+
+  if (type) {
+    values.push(type);
+    fields.push(`b.book_type=$${values.length}`);
+  }
+
+  const whereClause = `WHERE ${fields.join(" AND ")}`;
+
+  const pageSize = limit ?? 10;
+  const pageNumber = Math.max(1, page ?? 1);
+  const offset = (pageNumber - 1) * pageSize;
+
+  const query = `
+  SELECT
+    b.id, b.title,
+    CONCAT(e.name, ' ', e.department, ' ', e.year, ' year') AS level,
+    b.book_type AS type, b.selling_price, b.status, b.created_at,
+    COUNT(*) OVER() AS total_count
+  FROM books AS b
+      LEFT JOIN education_levels AS e ON b.edu_level_id = e.id
+      ${whereClause}
+      ORDER BY b.created_at DESC, b.id DESC LIMIT ${pageSize} OFFSET ${offset}
+    `;
+  type Query = Pick<
+    Book,
+    "id" | "title" | "selling_price" | "status" | "created_at"
+  > & {
+    level: string;
+    type: Book["book_type"];
+    total_count: number;
+  };
+
+  const result = await db.query<Query>(query, values);
+  const total =
+    result.rows.length > 0 ? Number(result.rows[0]?.total_count) : 0;
+  const books = result.rows.map(({ total_count, ...book }) => book);
+  const totalPages = Math.ceil(total / pageSize);
+  return {
+    books,
+    limit: pageSize,
+    page: pageNumber,
+    total,
+    totalPages,
+  };
+}
 
 export async function getDBBooksWithFilters(
   filters: GetBooksQuery,
