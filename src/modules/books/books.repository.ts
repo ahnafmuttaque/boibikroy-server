@@ -241,6 +241,29 @@ export async function patchDBBookById(
   return db.query<Book>(query, values);
 }
 
+export async function restrictDBBookById(
+  bookId: number,
+  adminId: number,
+  reason: string,
+  currentStatus: BookStatus,
+) {
+  const query = `
+    UPDATE books
+      SET status = 'restricted', restricted_by = $1, restricted_reason = $2, restricted_at = CURRENT_TIMESTAMP
+      WHERE id = $3 AND status = $4;
+    `;
+  return db.query(query, [adminId, reason, bookId, currentStatus]);
+}
+
+export async function draftDBRestrictedBookById(bookId: number) {
+  const query = `
+    UPDATE books
+      SET status = 'draft', restricted_by = NULL, restricted_reason = NULL, restricted_at = NULL
+      WHERE id = $1 AND status = 'restricted';
+    `;
+  return db.query(query, [bookId]);
+}
+
 export async function getDBBooksByStudent(
   studentId: number,
   filters: GetMyBooksQuery,

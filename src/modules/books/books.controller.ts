@@ -1,3 +1,8 @@
+import {
+  AdminBookStatusParamSchema,
+  RestrictBookSchema,
+} from "@validations/books.validation.js";
+import { AppError } from "@utils/AppError.js";
 import type {
   CreateBook,
   GetBooksQuery,
@@ -16,6 +21,7 @@ import {
   getBooksService,
   getMyBooksService,
   patchBookService,
+  updateBookStatusByAdminService,
 } from "./books.service.js";
 
 export const getBooks = asyncHandler(async (req: Request, res: Response) => {
@@ -54,6 +60,45 @@ export const patchBookById = asyncHandler(
     const patchBody: PatchBook = req.body;
     const book = await patchBookService(bookId, studentId, patchBody);
     new ApiResponse(StatusCodes.OK, book).send(res);
+  },
+);
+
+export const postBookStatusByAdmin = asyncHandler(
+  async (req: Request, res: Response) => {
+    const idStr = req.params.id;
+    const bookId = getPositiveNumber(idStr);
+    const statusResult = AdminBookStatusParamSchema.safeParse(
+      req.params.status,
+    );
+    if (!statusResult.success) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        statusResult.error.issues[0]!.message,
+      );
+    }
+    const status = statusResult.data;
+    const adminId = req.user!.id;
+
+    // a reason is required only when restricting
+    let reason: string | undefined;
+    if (status === "restricted") {
+      const bodyResult = RestrictBookSchema.safeParse(req.body ?? {});
+      if (!bodyResult.success) {
+        throw new AppError(
+          StatusCodes.BAD_REQUEST,
+          bodyResult.error.issues[0]!.message,
+        );
+      }
+      reason = bodyResult.data.restricted_reason;
+    }
+
+    await updateBookStatusByAdminService(bookId, adminId, status, reason);
+    new ApiResponse(StatusCodes.OK, {
+      message:
+        status === "restricted"
+          ? "Book restricted successfully"
+          : "Book moved to draft successfully",
+    }).send(res);
   },
 );
 

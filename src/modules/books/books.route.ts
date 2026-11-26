@@ -5,6 +5,7 @@ import {
   getBooks,
   getMyBooks,
   patchBookById,
+  postBookStatusByAdmin,
   postCreateBook,
 } from "./books.controller.js";
 import { validateJWt } from "@middlewares/auth.middleware.js";
@@ -55,6 +56,13 @@ router.patch(
   validateRole("student"),
   validateBodyWithSchema(PatchBookSchema),
   patchBookById,
+);
+
+router.post(
+  "/:id/:status",
+  validateJWt,
+  validateRole("admin", "moderator"),
+  postBookStatusByAdmin,
 );
 
 router.post(

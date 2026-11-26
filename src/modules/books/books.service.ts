@@ -1,11 +1,14 @@
 import type {
+  AdminBookStatusParam,
   CreateBook,
   GetBooksQuery,
   GetMyBooksQuery,
   PatchBook,
 } from "@validations/books.validation.js";
 import {
+  draftDBRestrictedBookById,
   existsDBEduLevelById,
+  restrictDBBookById,
   getDBBookById,
   getDBBooksByStudent,
   getDBBooksWithFilters,
@@ -181,4 +184,52 @@ export async function patchBookService(
     );
   }
   return patchResult.rows[0]!;
+}
+
+export async function updateBookStatusByAdminService(
+  bookId: number,
+  adminId: number,
+  status: AdminBookStatusParam,
+  reason?: string,
+) {
+  const bookRes = await getDBShortBookById(bookId);
+  // drafts are private to their owner, so admins can't act on them
+  if (!bookRes.rows.length || bookRes.rows[0]!.status === "draft") {
+    throw new AppError(StatusCodes.NOT_FOUND, "Book not found");
+  }
+  const book = bookRes.rows[0]!;
+
+  if (status === "restricted") {
+    if (book.status === "restricted") {
+      throw new AppError(StatusCodes.CONFLICT, "book is already restricted");
+    }
+    const restrictResult = await restrictDBBookById(
+      bookId,
+      adminId,
+      reason!,
+      book.status,
+    );
+    if (!restrictResult.rowCount) {
+      throw new AppError(
+        StatusCodes.CONFLICT,
+        "book was changed meanwhile, please try again",
+      );
+    }
+    return;
+  }
+
+  // status === "draft": lift the restriction and hand the book back to its owner
+  if (book.status !== "restricted") {
+    throw new AppError(
+      StatusCodes.CONFLICT,
+      "only restricted books can be moved to draft",
+    );
+  }
+  const draftResult = await draftDBRestrictedBookById(bookId);
+  if (!draftResult.rowCount) {
+    throw new AppError(
+      StatusCodes.CONFLICT,
+      "book was changed meanwhile, please try again",
+    );
+  }
 }

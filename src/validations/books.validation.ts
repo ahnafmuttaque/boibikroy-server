@@ -248,7 +248,21 @@ export const GetMyBooksQuerySchema = z.object({
     .optional(),
 });
 
+export const AdminBookStatusParamSchema = z.enum(["restricted", "draft"], {
+  message: "Status param must be 'restricted' or 'draft'",
+});
+
+export const RestrictBookSchema = z.object({
+  restricted_reason: z
+    .string({ message: "Restricted reason is required" })
+    .trim()
+    .min(10, "Restricted reason must be at least 10 characters")
+    .max(500, "Restricted reason must be at most 500 characters"),
+});
+
 export type CreateBook = z.infer<typeof CreateBookSchema>;
+export type AdminBookStatusParam = z.infer<typeof AdminBookStatusParamSchema>;
+export type RestrictBook = z.infer<typeof RestrictBookSchema>;
 export type PatchBook = z.infer<typeof PatchBookSchema>;
 export type GetMyBooksQuery = z.infer<typeof GetMyBooksQuerySchema>;
 export type GetBooksQuery = z.infer<typeof GetBooksQuerySchema>;
