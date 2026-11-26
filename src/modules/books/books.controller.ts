@@ -2,6 +2,7 @@ import type {
   CreateBook,
   GetBooksQuery,
   GetMyBooksQuery,
+  PatchBook,
 } from "@validations/books.validation.js";
 import type { Request, Response } from "express";
 import { ApiResponse, PaginatedResponse } from "@utils/ApiResponse.js";
@@ -14,6 +15,7 @@ import {
   getBookByIdService,
   getBooksService,
   getMyBooksService,
+  patchBookService,
 } from "./books.service.js";
 
 export const getBooks = asyncHandler(async (req: Request, res: Response) => {
@@ -43,6 +45,17 @@ export const getBookById = asyncHandler(async (req: Request, res: Response) => {
   const book = await getBookByIdService(bookId, req.user!);
   new ApiResponse(StatusCodes.OK, book).send(res);
 });
+
+export const patchBookById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const idStr = req.params.id;
+    const bookId = getPositiveNumber(idStr);
+    const studentId = req.user!.id;
+    const patchBody: PatchBook = req.body;
+    const book = await patchBookService(bookId, studentId, patchBody);
+    new ApiResponse(StatusCodes.OK, book).send(res);
+  },
+);
 
 export const postCreateBook = asyncHandler(
   async (req: Request, res: Response) => {

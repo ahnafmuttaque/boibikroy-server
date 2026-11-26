@@ -4,6 +4,7 @@ import type {
   CreateBook,
   GetBooksQuery,
   GetMyBooksQuery,
+  PatchBook,
 } from "@validations/books.validation.js";
 
 export const existsDBEduLevelById = async (eduLevelId: number) => {
@@ -104,6 +105,140 @@ export async function getDBBookById(bookId: number) {
   };
 
   return db.query<Query>(query, [bookId]);
+}
+
+export async function getDBShortBookById(bookId: number) {
+  const query = `
+    SELECT id, posted_by, status, original_price, selling_price FROM books
+      WHERE id = $1;
+    `;
+  return db.query<
+    Pick<Book, "id" | "posted_by" | "status" | "original_price" | "selling_price">
+  >(query, [bookId]);
+}
+
+export async function patchDBBookById(
+  bookId: number,
+  studentId: number,
+  currentStatus: BookStatus,
+  patchBody: PatchBook,
+) {
+  const fields: Array<string> = [];
+  const values: Array<any> = [];
+  const {
+    image_key,
+    title,
+    author,
+    edu_level_id,
+    book_type,
+    publication,
+    paper_code,
+    condition,
+    original_price,
+    selling_price,
+    is_negotiable,
+    publication_year,
+    status,
+    description,
+    meeting_campus_id,
+    contact_no,
+  } = patchBody;
+
+  if (image_key) {
+    values.push(image_key);
+    fields.push(`image_key=$${values.length}`);
+  }
+
+  if (title) {
+    values.push(title);
+    fields.push(`title=$${values.length}`);
+  }
+
+  if (author) {
+    values.push(author);
+    fields.push(`author=$${values.length}`);
+  }
+
+  if (edu_level_id) {
+    values.push(edu_level_id);
+    fields.push(`edu_level_id=$${values.length}`);
+  }
+
+  if (book_type) {
+    values.push(book_type);
+    fields.push(`book_type=$${values.length}`);
+  }
+
+  if (publication) {
+    values.push(publication);
+    fields.push(`publication=$${values.length}`);
+  }
+
+  if (paper_code) {
+    values.push(paper_code);
+    fields.push(`paper_code=$${values.length}`);
+  }
+
+  if (condition) {
+    values.push(condition);
+    fields.push(`condition=$${values.length}`);
+  }
+
+  if (original_price) {
+    values.push(original_price);
+    fields.push(`original_price=$${values.length}`);
+  }
+
+  if (selling_price) {
+    values.push(selling_price);
+    fields.push(`selling_price=$${values.length}`);
+  }
+
+  if (is_negotiable !== undefined) {
+    values.push(is_negotiable);
+    fields.push(`is_negotiable=$${values.length}`);
+  }
+
+  if (publication_year) {
+    values.push(publication_year);
+    fields.push(`publication_year=$${values.length}`);
+  }
+
+  if (status) {
+    values.push(status);
+    fields.push(`status=$${values.length}`);
+  }
+
+  if (description !== undefined) {
+    values.push(description);
+    fields.push(`description=$${values.length}`);
+  }
+
+  if (meeting_campus_id) {
+    values.push(meeting_campus_id);
+    fields.push(`meeting_campus_id=$${values.length}`);
+  }
+
+  if (contact_no) {
+    values.push(contact_no);
+    fields.push(`contact_no=$${values.length}`);
+  }
+
+  values.push(bookId);
+  const bookIdIndex = values.length;
+  values.push(studentId);
+  const studentIdIndex = values.length;
+  // status in WHERE so a concurrent status change can't slip past the transition check
+  values.push(currentStatus);
+  const statusIndex = values.length;
+
+  const query = `
+      UPDATE books SET ${fields.join(" , ")}
+        WHERE id=$${bookIdIndex} AND posted_by=$${studentIdIndex} AND status=$${statusIndex}
+        RETURNING *;
+  `;
+
+  return db.query<Book>(query, values);
 }
 
 export async function getDBBooksByStudent(

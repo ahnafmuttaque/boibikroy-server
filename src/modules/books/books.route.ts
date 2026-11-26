@@ -4,6 +4,7 @@ import {
   getBookById,
   getBooks,
   getMyBooks,
+  patchBookById,
   postCreateBook,
 } from "./books.controller.js";
 import { validateJWt } from "@middlewares/auth.middleware.js";
@@ -16,6 +17,7 @@ import {
   CreateBookSchema,
   GetBooksQuerySchema,
   GetMyBooksQuerySchema,
+  PatchBookSchema,
 } from "@validations/books.validation.js";
 
 const router = Router();
@@ -45,6 +47,14 @@ router.get(
   validateJWt,
   validateRole("admin", "moderator", "student"),
   getBookById,
+);
+
+router.patch(
+  "/:id",
+  validateJWt,
+  validateRole("student"),
+  validateBodyWithSchema(PatchBookSchema),
+  patchBookById,
 );
 
 router.post(
