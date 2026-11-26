@@ -90,4 +90,86 @@ export const CreateBookSchema = z
     path: ["selling_price"],
   });
 
+export const GetBooksQuerySchema = z
+  .object({
+    title: z.string().trim().min(1).max(200).optional(),
+    author: z.string().trim().min(1).max(200).optional(),
+    level: z.string().trim().min(1).max(100).optional(),
+    department: z.string().trim().min(1).max(100).optional(),
+    year: z
+      .enum(
+        ["1st", "2nd", "3rd", "4th"],
+        "Year must be '1st', '2nd', '3rd' or '4th'",
+      )
+      .optional(),
+    type: z
+      .enum(
+        BOOK_TYPES,
+        "Type must be 'class_book', 'easy_book' or 'suggestion_and_question_bank'",
+      )
+      .optional(),
+    publication: z.string().trim().min(1).max(200).optional(),
+    papercode: z.coerce
+      .number()
+      .int()
+      .positive("Paper code must be a positive integer")
+      .optional(),
+    condition: z
+      .enum(
+        BOOK_CONDITIONS,
+        "Condition must be 'like_new', 'normal' or 'written_on'",
+      )
+      .optional(),
+    price_min: z.coerce
+      .number()
+      .int()
+      .positive("Minimum price must be a positive integer")
+      .optional(),
+    price_max: z.coerce
+      .number()
+      .int()
+      .positive("Maximum price must be a positive integer")
+      .optional(),
+    isNegotiable: z
+      .enum(["true", "false"], "isNegotiable must be 'true' or 'false'")
+      .transform((value) => value === "true")
+      .optional(),
+    college: z.coerce
+      .number()
+      .int()
+      .positive("Invalid college ID")
+      .optional(),
+    sortBy: z
+      .enum(
+        ["original_price", "selling_price"],
+        "sortBy must be 'original_price' or 'selling_price'",
+      )
+      .optional(),
+    sortOrder: z
+      .enum(["asc", "desc"], "sortOrder must be 'asc' or 'desc'")
+      .optional(),
+    limit: z.coerce
+      .number()
+      .int()
+      .positive("Limit must be a positive integer")
+      .max(100, "Limit cannot exceed 100")
+      .optional(),
+    page: z.coerce
+      .number()
+      .int()
+      .positive("Page must be a positive integer")
+      .optional(),
+  })
+  .refine(
+    (data) =>
+      data.price_min === undefined ||
+      data.price_max === undefined ||
+      data.price_min <= data.price_max,
+    {
+      message: "Minimum price can't be greater than maximum price",
+      path: ["price_min"],
+    },
+  );
+
 export type CreateBook = z.infer<typeof CreateBookSchema>;
+export type GetBooksQuery = z.infer<typeof GetBooksQuerySchema>;

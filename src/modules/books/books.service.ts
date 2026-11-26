@@ -1,9 +1,21 @@
-import type { CreateBook } from "@validations/books.validation.js";
-import { existsDBEduLevelById, insertDBBook } from "./books.repository.js";
+import type {
+  CreateBook,
+  GetBooksQuery,
+} from "@validations/books.validation.js";
+import {
+  existsDBEduLevelById,
+  getDBBooksWithFilters,
+  insertDBBook,
+} from "./books.repository.js";
 import { getDBStatusStudent } from "@modules/students/student.repository.js";
 import { getDBCampusById } from "@modules/saved_campuses/saved_campuses.repository.js";
 import { AppError } from "@utils/AppError.js";
 import { StatusCodes } from "http-status-codes";
+
+export async function getBooksService(filters: GetBooksQuery) {
+  // everyone (logged in or not) can only see active books of non-suspended students
+  return await getDBBooksWithFilters(filters, ["active"], true);
+}
 
 export const createBookService = async (
   studentId: number,

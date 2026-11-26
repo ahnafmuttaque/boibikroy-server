@@ -1,6 +1,9 @@
 import db from "@config/db.config.js";
-import type { Book } from "@typedefs/books.type.js";
-import type { CreateBook } from "@validations/books.validation.js";
+import type { Book, BookStatus } from "@typedefs/books.type.js";
+import type {
+  CreateBook,
+  GetBooksQuery,
+} from "@validations/books.validation.js";
 
 export const existsDBEduLevelById = async (eduLevelId: number) => {
   const query = `
@@ -64,3 +67,147 @@ export const insertDBBook = async (studentId: number, createBook: CreateBook) =>
     contact_no ?? null,
   ]);
 };
+
+export async function getDBBooksWithFilters(
+  filters: GetBooksQuery,
+  visibleStatuses: BookStatus[],
+  hideSuspendedSellers: boolean,
+) {
+  const {
+    title,
+    author,
+    level,
+    department,
+    year,
+    type,
+    publication,
+    papercode,
+    condition,
+    price_min,
+    price_max,
+    isNegotiable,
+    college,
+    sortBy,
+    sortOrder,
+    limit,
+    page,
+  } = filters;
+  // b for books
+  // s for students (seller)
+  // e for education_levels
+  // sc for saved_campuses (meeting campus)
+  const values: Array<any> = [visibleStatuses];
+  const fields: Array<any> = [`b.status = ANY($${values.length})`];
+
+  if (hideSuspendedSellers) {
+    fields.push(`s.status <> 'suspended'`);
+  }
+
+  if (title) {
+    values.push(`%${title}%`);
+    fields.push(`b.title ILIKE $${values.length}`);
+  }
+
+  if (author) {
+    values.push(`%${author}%`);
+    fields.push(`b.author ILIKE $${values.length}`);
+  }
+
+  if (publication) {
+    values.push(`%${publication}%`);
+    fields.push(`b.publication ILIKE $${values.length}`);
+  }
+
+  if (level) {
+    values.push(level);
+    fields.push(`e.name ILIKE $${values.length}`);
+  }
+
+  if (department) {
+    values.push(department);
+    fields.push(`e.department ILIKE $${values.length}`);
+  }
+
+  if (year) {
+    values.push(year);
+    fields.push(`e.year=$${values.length}`);
+  }
+
+  if (type) {
+    values.push(type);
+    fields.push(`b.book_type=$${values.length}`);
+  }
+
+  if (papercode) {
+    values.push(papercode);
+    fields.push(`b.paper_code=$${values.length}`);
+  }
+
+  if (condition) {
+    values.push(condition);
+    fields.push(`b.condition=$${values.length}`);
+  }
+
+  if (price_min) {
+    values.push(price_min);
+    fields.push(`b.selling_price >= $${values.length}`);
+  }
+
+  if (price_max) {
+    values.push(price_max);
+    fields.push(`b.selling_price <= $${values.length}`);
+  }
+
+  if (isNegotiable !== undefined) {
+    values.push(isNegotiable);
+    fields.push(`b.is_negotiable=$${values.length}`);
+  }
+
+  if (college) {
+    values.push(college);
+    fields.push(`sc.college_id=$${values.length}`);
+  }
+
+  const whereClause = `WHERE ${fields.join(" AND ")}`;
+
+  // sortBy & sortOrder are whitelisted by zod enums, so they are safe to inline
+  const orderByClause = sortBy
+    ? `ORDER BY b.${sortBy} ${sortOrder === "desc" ? "DESC" : "ASC"}, b.created_at DESC, b.id DESC`
+    : `ORDER BY b.created_at DESC, b.id DESC`;
+
+  const pageSize = limit ?? 10;
+  const pageNumber = Math.max(1, page ?? 1);
+  const offset = (pageNumber - 1) * pageSize;
+
+  const query = `
+  SELECT
+    b.id, b.title,
+    CONCAT(e.name, ' ', e.department, ' ', e.year, ' year') AS level,
+    b.book_type AS type, b.selling_price,
+    COUNT(*) OVER() AS total_count
+  FROM books AS b
+      INNER JOIN students AS s ON b.posted_by = s.id
+      LEFT JOIN education_levels AS e ON b.edu_level_id = e.id
+      LEFT JOIN saved_campuses AS sc ON b.meeting_campus_id = sc.id
+      ${whereClause}
+      ${orderByClause} LIMIT ${pageSize} OFFSET ${offset}
+    `;
+  type Query = Pick<Book, "id" | "title" | "selling_price"> & {
+    level: string;
+    type: Book["book_type"];
+    total_count: number;
+  };
+
+  const result = await db.query<Query>(query, values);
+  const total =
+    result.rows.length > 0 ? Number(result.rows[0]?.total_count) : 0;
+  const books = result.rows.map(({ total_count, ...book }) => book);
+  const totalPages = Math.ceil(total / pageSize);
+  return {
+    books,
+    limit: pageSize,
+    page: pageNumber,
+    total,
+    totalPages,
+  };
+}
