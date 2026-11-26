@@ -5,6 +5,7 @@ import type {
 } from "@validations/books.validation.js";
 import {
   existsDBEduLevelById,
+  getDBBookById,
   getDBBooksByStudent,
   getDBBooksWithFilters,
   insertDBBook,
@@ -39,6 +40,34 @@ export async function getMyBooksService(
   }
   // students see all of their own books, drafts & restricted included
   return await getDBBooksByStudent(studentId, filters);
+}
+
+export async function getBookByIdService(
+  bookId: number,
+  user: { id: number; role: "admin" | "moderator" | "student" },
+) {
+  const result = await getDBBookById(bookId);
+  if (!result.rows.length) {
+    throw new AppError(StatusCodes.NOT_FOUND, "Book not found");
+  }
+  const { seller_status, restricted_by, restricted_admin_name, ...book } =
+    result.rows[0]!;
+
+  if (user.role === "admin" || user.role === "moderator") {
+    // admins see every book except drafts
+    if (book.status === "draft") {
+      throw new AppError(StatusCodes.NOT_FOUND, "Book not found");
+    }
+    return { ...book, restricted_by, restricted_admin_name };
+  }
+
+  // students see their own books in any status,
+  // and other students' books only when they are active & the seller isn't suspended
+  const isOwner = book.posted_by === user.id;
+  if (!isOwner && (book.status !== "active" || seller_status === "suspended")) {
+    throw new AppError(StatusCodes.NOT_FOUND, "Book not found");
+  }
+  return book;
 }
 
 export const createBookService = async (

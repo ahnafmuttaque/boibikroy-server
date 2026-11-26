@@ -69,6 +69,43 @@ export const insertDBBook = async (studentId: number, createBook: CreateBook) =>
   ]);
 };
 
+export async function getDBBookById(bookId: number) {
+  const query = `
+    SELECT
+      b.id, b.image_key, b.title, b.author, b.posted_by,
+      s.full_name AS seller_name, s.status AS seller_status,
+      b.edu_level_id, CONCAT(e.name, ' ', e.department, ' ', e.year, ' year') AS level,
+      b.book_type AS type, b.publication, b.paper_code, b.condition,
+      b.original_price, b.selling_price, b.is_negotiable, b.publication_year,
+      b.status, b.description,
+      b.meeting_campus_id, sc.meeting_place, sc.college_id, c.name AS college_name,
+      b.contact_no,
+      b.restricted_by, a.full_name AS restricted_admin_name,
+      b.restricted_reason, b.restricted_at,
+      b.created_at
+    FROM books AS b
+        INNER JOIN students AS s ON b.posted_by = s.id
+        LEFT JOIN education_levels AS e ON b.edu_level_id = e.id
+        LEFT JOIN saved_campuses AS sc ON b.meeting_campus_id = sc.id
+        LEFT JOIN colleges AS c ON sc.college_id = c.id
+        LEFT JOIN admins AS a ON b.restricted_by = a.id
+    WHERE b.id = $1;
+   `;
+
+  type Query = Omit<Book, "book_type"> & {
+    type: Book["book_type"];
+    seller_name: string;
+    seller_status: string;
+    level: string;
+    meeting_place: string;
+    college_id: number;
+    college_name: string;
+    restricted_admin_name: string | null;
+  };
+
+  return db.query<Query>(query, [bookId]);
+}
+
 export async function getDBBooksByStudent(
   studentId: number,
   filters: GetMyBooksQuery,

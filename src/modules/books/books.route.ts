@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getAdminBooks,
+  getBookById,
   getBooks,
   getMyBooks,
   postCreateBook,
@@ -36,6 +37,14 @@ router.get(
   validateRole("student"),
   validateQueryWithSchema(GetMyBooksQuerySchema),
   getMyBooks,
+);
+
+// must stay after /admin & /me so they aren't read as an id
+router.get(
+  "/:id",
+  validateJWt,
+  validateRole("admin", "moderator", "student"),
+  getBookById,
 );
 
 router.post(
