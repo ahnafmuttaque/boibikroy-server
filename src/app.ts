@@ -8,6 +8,7 @@ import adminRouter from "@modules/admin/admin.route.js";
 import studentRouter from "@modules/students/student.route.js";
 import savedCampusRouter from "@modules/saved_campuses/saved_campuses.route.js";
 import reportsRouter from "@modules/reports/reports.route.js";
+import booksRouter from "@modules/books/books.route.js";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import env from "@config/env.config.js";
@@ -20,6 +21,7 @@ const studentRoute = `${ApiVersionOne}/students`;
 const feedbackRoute = `${ApiVersionOne}/feedbacks`;
 const savedCampusRoute = `${ApiVersionOne}/saved_campuses`;
 const reportsRoute = `${ApiVersionOne}/reports`;
+const booksRoute = `${ApiVersionOne}/books`;
 
 app.get("/", async (req, res) => {
   res.json({
@@ -41,6 +43,7 @@ app.use(adminRoute, adminRouter);
 app.use(studentRoute, studentRouter);
 app.use(savedCampusRoute, savedCampusRouter);
 app.use(reportsRoute, reportsRouter);
+app.use(booksRoute, booksRouter);
 
 // not found route
 app.use((req, res) => {
