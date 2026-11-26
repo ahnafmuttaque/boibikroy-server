@@ -10,7 +10,6 @@ import {
   campusCreateService,
   campusDeleteService,
   campusGetAllService,
-  getAssociatedBooksService,
   patchCampusService,
 } from "./saved_campuses.service.js";
 import { ApiResponse } from "@utils/ApiResponse.js";
@@ -61,6 +60,4 @@ export const getAssociatedBooks = asyncHandler(async (req, res) => {
   const studentId = req.user!.id;
   const campusIdStr = req.params.campus_id;
   const campusId = getPositiveNumber(campusIdStr);
-  const associatedBooks = await getAssociatedBooksService(studentId, campusId);
-  new ApiResponse(StatusCodes.OK, associatedBooks).send(res);
 });

@@ -7,7 +7,6 @@ import {
   deleteDBCampus,
   getCollegeCountWithId,
   getDBAssociatedBookCount,
-  getDBAssociatedBooks,
   getDBCampusById,
   getDBCampuses,
   getDBCampusesWithCollege,
@@ -115,6 +114,4 @@ export const getAssociatedBooksService = async (
   if (!getCampusResult.rows.length) {
     throw new AppError(StatusCodes.NOT_FOUND, "campus not found");
   }
-  const associatedBooksResult = await getDBAssociatedBooks(studentId, campusId);
-  return associatedBooksResult.rows!;
 };

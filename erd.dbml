@@ -131,17 +131,17 @@ Table feedbacks {
 
 Table reports {
   id integer [primary key]
-  type varchar(200) [not null, note: "book | usbber"]
+  type varchar(200) [not null, note: "book | student"]
   book_id integer [ref: >? books.id, note: "on delete of book, report will be deleted automatically(cascade)"]
   student_id integer [ref: >? students.id, note: "on delete of user, report will be deleted automatically(cascade)"]
   reported_by integer [ref: > students.id, not null]
-  report_reason text [not null]
+  reason text [not null, check: `char_length(trim(reason)) >= 20`]
   status varchar(200) [not null, default: "pending", note: "pending | reviewed | confirmed"]
   // reviewed_by will be updated whoever changed the status to non-pending.
   reviewed_by integer [not null, ref: > admins.id ,note: "admin who reviewed the report"]
   reviewed_at timestamp
   created_at timestamp [not null]
   checks {
-  `type = 'book' and book_id is not null and user_id is null or type = 'user' and user_id is not null and book_id is null`
+  `type = 'book' and book_id is not null and student_id is null or type = 'student' and student_id is not null and book_id is null`
   }
 }
