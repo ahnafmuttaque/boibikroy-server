@@ -10,11 +10,18 @@ import {
 import { getDBStatusStudent } from "@modules/students/student.repository.js";
 import { getDBCampusById } from "@modules/saved_campuses/saved_campuses.repository.js";
 import { AppError } from "@utils/AppError.js";
+import { BOOK_STATUSES } from "@typedefs/books.type.js";
 import { StatusCodes } from "http-status-codes";
 
 export async function getBooksService(filters: GetBooksQuery) {
   // everyone (logged in or not) can only see active books of non-suspended students
   return await getDBBooksWithFilters(filters, ["active"], true);
+}
+
+export async function getAdminBooksService(filters: GetBooksQuery) {
+  // admins see every book except drafts, including suspended students' books
+  const visibleStatuses = BOOK_STATUSES.filter((status) => status !== "draft");
+  return await getDBBooksWithFilters(filters, visibleStatuses, false);
 }
 
 export const createBookService = async (

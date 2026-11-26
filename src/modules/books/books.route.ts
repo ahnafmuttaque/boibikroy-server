@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getBooks, postCreateBook } from "./books.controller.js";
+import { getAdminBooks, getBooks, postCreateBook } from "./books.controller.js";
 import { validateJWt } from "@middlewares/auth.middleware.js";
 import { validateRole } from "@middlewares/validateRole.middleware.js";
 import {
@@ -15,6 +15,14 @@ const router = Router();
 
 // public: anyone, logged in or not
 router.get("/", validateQueryWithSchema(GetBooksQuerySchema), getBooks);
+
+router.get(
+  "/admin",
+  validateJWt,
+  validateRole("admin", "moderator"),
+  validateQueryWithSchema(GetBooksQuerySchema),
+  getAdminBooks,
+);
 
 router.post(
   "/",
