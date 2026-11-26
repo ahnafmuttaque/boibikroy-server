@@ -9,8 +9,10 @@ import { StatusCodes } from "http-status-codes";
 import {
   createReportService,
   getMyReportsService,
+  getReportByIdService,
   getReportsService,
 } from "./reports.service.js";
+import { getPositiveNumber } from "@validations/number.validation.js";
 
 export const getReports = asyncHandler(async (req: Request, res: Response) => {
   const filters = req.query as any as GetReportsQuery;
@@ -27,6 +29,15 @@ export const getMyReports = asyncHandler(
       filters,
     );
     new PaginatedResponse(StatusCodes.OK, reports, pagination).send(res);
+  },
+);
+
+export const getReportById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const idStr = req.params.id;
+    const reportId = getPositiveNumber(idStr);
+    const report = await getReportByIdService(reportId);
+    new ApiResponse(StatusCodes.OK, report).send(res);
   },
 );
 

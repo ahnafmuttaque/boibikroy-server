@@ -8,6 +8,7 @@ import {
   createDBStudentReport,
   existsDBBookById,
   existsDBStudentById,
+  getDBReportById,
   getDBReportsByReporter,
   getDBReportsWithFilters,
 } from "./reports.repository.js";
@@ -23,6 +24,14 @@ export async function getMyReportsService(
   filters: GetMyReportsQuery,
 ) {
   return await getDBReportsByReporter(reporterId, filters);
+}
+
+export async function getReportByIdService(reportId: number) {
+  const result = await getDBReportById(reportId);
+  if (!result.rows.length) {
+    throw new AppError(StatusCodes.NOT_FOUND, "Report not found");
+  }
+  return result.rows[0]!;
 }
 
 export const createReportService = async (

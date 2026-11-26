@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getMyReports,
+  getReportById,
   getReports,
   postReports,
 } from "./reports.controller.js";
@@ -33,6 +34,8 @@ router.get(
   validateQueryWithSchema(GetMyReportsQuerySchema),
   getMyReports,
 );
+
+router.get("/:id", validateRole("admin", "moderator"), getReportById);
 
 router.post(
   "/",

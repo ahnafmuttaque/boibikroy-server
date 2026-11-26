@@ -171,6 +171,26 @@ export async function getDBReportsWithFilters(filters: GetReportsQuery) {
   };
 }
 
+export async function getDBReportById(reportId: number) {
+  const query = `
+    SELECT
+      r.id, r.type, r.book_id, r.student_id, r.reported_by, r.reason,
+      r.status, r.reviewed_by, r.reviewed_at, r.created_at,
+      rs.full_name AS reporter_name, rs.email AS reporter_email,
+      s.full_name AS reported_student_name, s.email AS reported_student_email,
+      b.title AS reported_book_title,
+      a.full_name AS reviewer_name
+    FROM reports AS r
+        LEFT JOIN students AS rs ON r.reported_by = rs.id
+        LEFT JOIN students AS s ON r.student_id = s.id
+        LEFT JOIN books AS b ON r.book_id = b.id
+        LEFT JOIN admins AS a ON r.reviewed_by = a.id
+    WHERE r.id = $1;
+   `;
+
+  return db.query<ReportWithDetails>(query, [reportId]);
+}
+
 export async function getDBReportsByReporter(
   reporterId: number,
   filters: GetMyReportsQuery,
