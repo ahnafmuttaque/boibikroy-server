@@ -16,6 +16,7 @@ import { StatusCodes } from "http-status-codes";
 import { getPositiveNumber } from "@validations/number.validation.js";
 import {
   createBookService,
+  deleteBookService,
   getAdminBooksService,
   getBookByIdService,
   getBooksService,
@@ -60,6 +61,16 @@ export const patchBookById = asyncHandler(
     const patchBody: PatchBook = req.body;
     const book = await patchBookService(bookId, studentId, patchBody);
     new ApiResponse(StatusCodes.OK, book).send(res);
+  },
+);
+
+export const deleteBookById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const idStr = req.params.id;
+    const bookId = getPositiveNumber(idStr);
+    const studentId = req.user!.id;
+    await deleteBookService(bookId, studentId);
+    new ApiResponse(StatusCodes.NO_CONTENT).send(res);
   },
 );
 

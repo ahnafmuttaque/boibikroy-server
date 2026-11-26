@@ -6,6 +6,7 @@ import type {
   PatchBook,
 } from "@validations/books.validation.js";
 import {
+  deleteDBBookById,
   draftDBRestrictedBookById,
   existsDBEduLevelById,
   restrictDBBookById,
@@ -184,6 +185,31 @@ export async function patchBookService(
     );
   }
   return patchResult.rows[0]!;
+}
+
+export async function deleteBookService(bookId: number, studentId: number) {
+  await activeStudentCheck(studentId);
+
+  const bookRes = await getDBShortBookById(bookId);
+  // other students' books are reported as not found
+  if (!bookRes.rows.length || bookRes.rows[0]!.posted_by !== studentId) {
+    throw new AppError(StatusCodes.NOT_FOUND, "Book not found");
+  }
+
+  if (bookRes.rows[0]!.status === "restricted") {
+    throw new AppError(
+      StatusCodes.FORBIDDEN,
+      "restricted books can't be deleted",
+    );
+  }
+
+  const deleteResult = await deleteDBBookById(bookId, studentId);
+  if (!deleteResult.rowCount) {
+    throw new AppError(
+      StatusCodes.CONFLICT,
+      "book was changed meanwhile, please try again",
+    );
+  }
 }
 
 export async function updateBookStatusByAdminService(

@@ -264,6 +264,15 @@ export async function draftDBRestrictedBookById(bookId: number) {
   return db.query(query, [bookId]);
 }
 
+export async function deleteDBBookById(bookId: number, studentId: number) {
+  // restricted books are kept so admins still have them as evidence
+  const query = `
+    DELETE FROM books
+      WHERE id = $1 AND posted_by = $2 AND status <> 'restricted';
+    `;
+  return db.query(query, [bookId, studentId]);
+}
+
 export async function getDBBooksByStudent(
   studentId: number,
   filters: GetMyBooksQuery,

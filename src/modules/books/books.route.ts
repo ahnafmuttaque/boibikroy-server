@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  deleteBookById,
   getAdminBooks,
   getBookById,
   getBooks,
@@ -56,6 +57,13 @@ router.patch(
   validateRole("student"),
   validateBodyWithSchema(PatchBookSchema),
   patchBookById,
+);
+
+router.delete(
+  "/:id",
+  validateJWt,
+  validateRole("student"),
+  deleteBookById,
 );
 
 router.post(
