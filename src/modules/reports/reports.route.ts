@@ -3,6 +3,7 @@ import {
   getMyReports,
   getReportById,
   getReports,
+  postReportStatus,
   postReports,
 } from "./reports.controller.js";
 import { validateJWt } from "@middlewares/auth.middleware.js";
@@ -36,6 +37,12 @@ router.get(
 );
 
 router.get("/:id", validateRole("admin", "moderator"), getReportById);
+
+router.post(
+  "/:id/:status",
+  validateRole("admin", "moderator"),
+  postReportStatus,
+);
 
 router.post(
   "/",

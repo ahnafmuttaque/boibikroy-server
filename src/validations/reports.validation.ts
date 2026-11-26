@@ -117,20 +117,18 @@ export const GetMyReportsQuerySchema = z.object({
 
 export const UpdateReportStatusSchema = z
   .object({
-    status: z.enum(["reviewed", "action_taken", "confirmed"], {
-      message: "Status must be 'reviewed', 'action_taken', or 'confirmed'",
+    status: z.enum(["reviewed", "action_taken"], {
+      message: "Status must be 'reviewed' or 'action_taken'",
     }),
   })
   .strict();
 
-export const ReportStatusParamSchema = z.enum(
-  ["reviewed", "action_taken", "confirmed"],
-  {
-    message: "Status param must be 'reviewed', 'action_taken', or 'confirmed'",
-  },
-);
+export const ReportStatusParamSchema = z.enum(["reviewed", "action_taken"], {
+  message: "Status param must be 'reviewed' or 'action_taken'",
+});
 
 export type CreateReport = z.infer<typeof CreateReportSchema>;
 export type GetReportsQuery = z.infer<typeof GetReportsQuerySchema>;
 export type GetMyReportsQuery = z.infer<typeof GetMyReportsQuerySchema>;
 export type UpdateReportStatus = z.infer<typeof UpdateReportStatusSchema>;
+export type ReportStatusParam = z.infer<typeof ReportStatusParamSchema>;

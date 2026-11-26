@@ -3,6 +3,7 @@ import type { Report, ReportWithDetails } from "@typedefs/reports.type.js";
 import type {
   GetMyReportsQuery,
   GetReportsQuery,
+  ReportStatusParam,
 } from "@validations/reports.validation.js";
 
 export const existsDBBookById = async (bookId: number) => {
@@ -189,6 +190,27 @@ export async function getDBReportById(reportId: number) {
    `;
 
   return db.query<ReportWithDetails>(query, [reportId]);
+}
+
+export async function getDBStatusReport(reportId: number) {
+  const query = `
+    SELECT status FROM reports
+      WHERE id = $1;
+    `;
+  return db.query<Pick<Report, "status">>(query, [reportId]);
+}
+
+export async function updateDBReportStatus(
+  reportId: number,
+  adminId: number,
+  status: ReportStatusParam,
+) {
+  const query = `
+    UPDATE reports
+      SET status = $1, reviewed_by = $2, reviewed_at = CURRENT_TIMESTAMP
+      WHERE id = $3 AND status = 'pending';
+    `;
+  return db.query(query, [status, adminId, reportId]);
 }
 
 export async function getDBReportsByReporter(

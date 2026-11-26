@@ -2,6 +2,7 @@ import type {
   CreateReport,
   GetMyReportsQuery,
   GetReportsQuery,
+  ReportStatusParam,
 } from "@validations/reports.validation.js";
 import {
   createDBBookReport,
@@ -11,6 +12,8 @@ import {
   getDBReportById,
   getDBReportsByReporter,
   getDBReportsWithFilters,
+  getDBStatusReport,
+  updateDBReportStatus,
 } from "./reports.repository.js";
 import { AppError } from "@utils/AppError.js";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
@@ -32,6 +35,30 @@ export async function getReportByIdService(reportId: number) {
     throw new AppError(StatusCodes.NOT_FOUND, "Report not found");
   }
   return result.rows[0]!;
+}
+
+export async function updateReportStatusService(
+  reportId: number,
+  adminId: number,
+  status: ReportStatusParam,
+) {
+  const getResult = await getDBStatusReport(reportId);
+  if (!getResult.rows.length) {
+    throw new AppError(StatusCodes.NOT_FOUND, "Report not found");
+  }
+  if (getResult.rows[0]!.status !== "pending") {
+    throw new AppError(
+      StatusCodes.CONFLICT,
+      "only pending reports can be updated",
+    );
+  }
+  const updateResult = await updateDBReportStatus(reportId, adminId, status);
+  if (!updateResult.rowCount) {
+    throw new AppError(
+      StatusCodes.CONFLICT,
+      "only pending reports can be updated",
+    );
+  }
 }
 
 export const createReportService = async (

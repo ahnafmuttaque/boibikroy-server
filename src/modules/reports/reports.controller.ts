@@ -1,7 +1,9 @@
-import type {
-  GetMyReportsQuery,
-  GetReportsQuery,
+import {
+  ReportStatusParamSchema,
+  type GetMyReportsQuery,
+  type GetReportsQuery,
 } from "@validations/reports.validation.js";
+import { AppError } from "@utils/AppError.js";
 import type { Request, Response } from "express";
 import { ApiResponse, PaginatedResponse } from "@utils/ApiResponse.js";
 import { asyncHandler } from "@utils/asyncHandler.js";
@@ -11,6 +13,7 @@ import {
   getMyReportsService,
   getReportByIdService,
   getReportsService,
+  updateReportStatusService,
 } from "./reports.service.js";
 import { getPositiveNumber } from "@validations/number.validation.js";
 
@@ -38,6 +41,25 @@ export const getReportById = asyncHandler(
     const reportId = getPositiveNumber(idStr);
     const report = await getReportByIdService(reportId);
     new ApiResponse(StatusCodes.OK, report).send(res);
+  },
+);
+
+export const postReportStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const idStr = req.params.id;
+    const reportId = getPositiveNumber(idStr);
+    const statusResult = ReportStatusParamSchema.safeParse(req.params.status);
+    if (!statusResult.success) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        statusResult.error.issues[0]!.message,
+      );
+    }
+    const adminId = req.user!.id;
+    await updateReportStatusService(reportId, adminId, statusResult.data);
+    new ApiResponse(StatusCodes.OK, {
+      message: "Report status updated successfully",
+    }).send(res);
   },
 );
 
