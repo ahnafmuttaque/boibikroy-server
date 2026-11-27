@@ -10,6 +10,7 @@ import savedCampusRouter from "@modules/saved_campuses/saved_campuses.route.js";
 import reportsRouter from "@modules/reports/reports.route.js";
 import booksRouter from "@modules/books/books.route.js";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import morgan from "morgan";
 import env from "@config/env.config.js";
 
@@ -33,6 +34,16 @@ app.get("/", async (req, res) => {
 if (env.NODE_ENV !== "test") {
   app.use(morgan("dev"));
 }
+
+// TODO: restrict origin to the frontend's domain once it is deployed.
+// origin: true reflects the request's origin, so every origin is allowed.
+// a plain "*" can't be used because the auth cookie needs credentials.
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
 
 app.use(cookieParser());
 app.use(express.json());
