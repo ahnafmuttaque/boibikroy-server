@@ -9,6 +9,9 @@ import studentRouter from "@modules/students/student.route.js";
 import savedCampusRouter from "@modules/saved_campuses/saved_campuses.route.js";
 import reportsRouter from "@modules/reports/reports.route.js";
 import booksRouter from "@modules/books/books.route.js";
+import collegesRouter from "@modules/colleges/colleges.route.js";
+import educationLevelsRouter from "@modules/education_levels/education_levels.route.js";
+import locationsRouter from "@modules/locations/locations.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
@@ -23,6 +26,9 @@ const feedbackRoute = `${ApiVersionOne}/feedbacks`;
 const savedCampusRoute = `${ApiVersionOne}/saved_campuses`;
 const reportsRoute = `${ApiVersionOne}/reports`;
 const booksRoute = `${ApiVersionOne}/books`;
+const collegesRoute = `${ApiVersionOne}/colleges`;
+const educationLevelsRoute = `${ApiVersionOne}/education_levels`;
+const locationsRoute = `${ApiVersionOne}/locations`;
 
 app.get("/", async (req, res) => {
   res.json({
@@ -55,6 +61,9 @@ app.use(studentRoute, studentRouter);
 app.use(savedCampusRoute, savedCampusRouter);
 app.use(reportsRoute, reportsRouter);
 app.use(booksRoute, booksRouter);
+app.use(collegesRoute, collegesRouter);
+app.use(educationLevelsRoute, educationLevelsRouter);
+app.use(locationsRoute, locationsRouter);
 
 // not found route
 app.use((req, res) => {

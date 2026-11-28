@@ -28,6 +28,9 @@ Students list their books, choose saved campuses as meeting points, and report s
   - [Books](#books)
   - [Reports](#reports)
   - [Feedbacks](#feedbacks)
+  - [Colleges](#colleges)
+  - [Education Levels](#education-levels)
+  - [Locations](#locations)
 
 ---
 
@@ -50,7 +53,8 @@ src/
 ├── index.ts            # server entry point
 ├── config/             # env, database pool, cookie options
 ├── middlewares/        # auth (JWT), role check, schema validation, errors
-├── modules/            # auth, admin, students, saved_campuses, books, reports, feedbacks
+├── modules/            # auth, admin, students, saved_campuses, books, reports, feedbacks,
+│                       # colleges, education_levels, locations
 ├── types/              # shared TypeScript types & enums
 ├── utils/              # ApiResponse, AppError, asyncHandler, createJWT
 └── validations/        # Zod request schemas
@@ -332,6 +336,12 @@ Transitions an **admin or moderator** can make (`POST /books/:id/:status`):
 | `GET`    | `/feedbacks`                          | Admin, Moderator           |
 | `GET`    | `/feedbacks/:id`                      | Admin, Moderator           |
 | `PATCH`  | `/feedbacks/:id`                      | Admin, Moderator           |
+| `GET`    | `/colleges`                           | Public                     |
+| `GET`    | `/colleges/:id`                       | Public                     |
+| `GET`    | `/education_levels`                   | Public                     |
+| `GET`    | `/locations/divisions`                | Public                     |
+| `GET`    | `/locations/districts`                | Public                     |
+| `GET`    | `/locations/upazilas`                 | Public                     |
 
 ---
 
@@ -1799,3 +1809,188 @@ Only `pending` feedback can be updated. Records the caller as `reviewed_by` and 
 | `400`  | `Invalid feedback status. Must be 'reviewed' or 'mark-as-improvement'`   |
 | `409`  | `feedback status is already updated`                                     |
 | `404`  | `feedback not found`                                                     |
+
+---
+
+## Colleges
+
+Colleges are reference data, used for registration, profiles and saved campuses. Only approved colleges are served.
+
+### List Colleges
+
+`GET /colleges` · **Public**
+
+Paginated, sorted by name.
+
+**Query**
+
+| Param    | Type    | Description                                                                 |
+| -------- | ------- | --------------------------------------------------------------------------- |
+| `search` | string  | 1 to 300 characters. Case-insensitive match on name, code, address, upazila and district. |
+| `limit`  | integer | See [Pagination](#pagination).                                              |
+| `page`   | integer | See [Pagination](#pagination).                                              |
+
+```
+GET /api/v1/colleges?search=bagerhat&limit=20
+```
+
+**Response** `200 OK`
+
+```json
+{
+  "data": [
+    {
+      "id": 15,
+      "code": "0115",
+      "name": "A. R. KHAN DEGREE COLLEGE",
+      "address": "POST OFFICE : SANNYASHI BAZAR",
+      "upazila": "MORRELGONJ",
+      "district": "BAGERHAT",
+      "division": "KHULNA"
+    }
+  ],
+  "limit": 20,
+  "page": 1,
+  "total": 31,
+  "totalPages": 2
+}
+```
+
+---
+
+### Get College
+
+`GET /colleges/:id` · **Public**
+
+**Response** `200 OK`
+
+```json
+{
+  "id": 1,
+  "code": "0101",
+  "name": "GOVT. P. C. COLLEGE",
+  "address": "VILL-HARINKHANA, P.O- P.C. COLLEGE, BAGERHAT",
+  "upazila": "BAGERHAT SADAR",
+  "district": "BAGERHAT",
+  "division": "KHULNA"
+}
+```
+
+**Errors**
+
+| Status | `error`              | When                                        |
+| ------ | -------------------- | ------------------------------------------- |
+| `404`  | `College not found`  | No approved college with this id.           |
+
+---
+
+## Education Levels
+
+### List Education Levels
+
+`GET /education_levels` · **Public**
+
+Returns every education level, sorted by name, department and year. Not paginated.
+
+**Response** `200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "name": "honours",
+    "department": "mathematics",
+    "year": "1st"
+  }
+]
+```
+
+---
+
+## Locations
+
+Bangladesh's administrative areas: divisions contain districts, and districts contain upazilas. A student's address uses an `upazila_id`.
+
+These lists are not paginated and are sorted by English name. Pass the parent id to fill dependent dropdowns (division → district → upazila).
+
+### List Divisions
+
+`GET /locations/divisions` · **Public**
+
+**Response** `200 OK`
+
+```json
+[
+  {
+    "id": 4,
+    "name_en": "Barisal",
+    "bn_name": "বরিশাল"
+  }
+]
+```
+
+---
+
+### List Districts
+
+`GET /locations/districts` · **Public**
+
+**Query**
+
+| Param         | Type    | Description                                  |
+| ------------- | ------- | -------------------------------------------- |
+| `division_id` | integer | Only districts of this division. Optional.   |
+
+**Response** `200 OK`
+
+```json
+[
+  {
+    "id": 11,
+    "division_id": 1,
+    "name_en": "Bandarban",
+    "bn_name": "বান্দরবান"
+  }
+]
+```
+
+An unknown `division_id` returns an empty list.
+
+**Errors**
+
+| Status | `error`                |
+| ------ | ---------------------- |
+| `400`  | `Invalid division ID`  |
+
+---
+
+### List Upazilas
+
+`GET /locations/upazilas` · **Public**
+
+**Query**
+
+| Param         | Type    | Description                                  |
+| ------------- | ------- | -------------------------------------------- |
+| `district_id` | integer | Only upazilas of this district. Optional.    |
+
+**Response** `200 OK`
+
+```json
+[
+  {
+    "id": 2,
+    "district_id": 1,
+    "name_en": "Barura",
+    "bn_name": "বরুড়া"
+  }
+]
+```
+
+An unknown `district_id` returns an empty list.
+
+**Errors**
+
+| Status | `error`                |
+| ------ | ---------------------- |
+| `400`  | `Invalid district ID`  |
